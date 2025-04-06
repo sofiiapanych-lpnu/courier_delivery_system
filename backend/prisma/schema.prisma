@@ -1,0 +1,196 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  user_id    Int      @id @default(autoincrement())
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  email       String @unique @db.VarChar()
+  hash        String @db.VarChar()
+  phoneNumber String @unique @db.VarChar(20)
+
+  first_name String @db.VarChar(20)
+  last_name  String @db.VarChar(20)
+
+  role    String   @db.VarChar(20)
+  Client  Client?
+  Courier Courier?
+
+  @@map("users")
+}
+
+model Client {
+  client_id  Int      @id @default(autoincrement())
+  user_id    Int      @unique
+  address_id Int
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  user       User       @relation(fields: [user_id], references: [user_id])
+  address    Address    @relation(fields: [address_id], references: [address_id])
+  deliveries Delivery[]
+  feedbacks  Feedback[]
+
+  @@index([user_id])
+  @@map("clients")
+}
+
+model Courier {
+  courier_id    Int      @id @default(autoincrement())
+  user_id       Int      @unique
+  license_plate String   @unique @db.VarChar(20)
+  //rating        Int //лишити для оптимізації чи забрати?
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  user       User              @relation(fields: [user_id], references: [user_id])
+  vehicle    Vehicle           @relation(fields: [license_plate], references: [license_plate])
+  schedules  CourierSchedule[]
+  deliveries Delivery[]
+  feedbacks  Feedback[]
+
+  @@index([user_id])
+  @@map("couriers")
+}
+
+model Vehicle {
+  license_plate  String   @id @db.VarChar(20)
+  model          String   @db.VarChar(50)
+  transport_type String   @db.VarChar(20)
+  capacity       Int
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  Courier Courier?
+
+  @@map("vehicles")
+}
+
+model Address {
+  address_id       Int      @id @default(autoincrement())
+  street_name      String   @db.VarChar(100)
+  building_number  Int
+  apartment_number Int?
+  city             String   @db.VarChar(50)
+  country          String   @db.VarChar(50)
+  // latitude         Float
+  // longitude        Float
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  clients    Client[]
+  warehouses Warehouse[]
+
+  @@map("addresses")
+}
+
+model Warehouse {
+  warehouse_id   Int      @id @default(autoincrement())
+  address_id     Int
+  name           String   @db.VarChar(50)
+  contact_number String   @db.VarChar(20)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  address    Address    @relation(fields: [address_id], references: [address_id])
+  deliveries Delivery[]
+
+  @@map("warehouses")
+}
+
+model Order {
+  order_id       Int      @id @default(autoincrement())
+  order_type     String   @db.VarChar(50)
+  description    String   @db.VarChar(255)
+  cost           Decimal  @db.Decimal(10, 2)
+  payment_method String   @db.VarChar(20)
+  weight         Decimal  @db.Decimal(10, 2)
+  length         Decimal  @db.Decimal(10, 2)
+  width          Decimal  @db.Decimal(10, 2)
+  height         Decimal  @db.Decimal(10, 2)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  deliveries Delivery[]
+
+  @@map("orders")
+}
+
+model Delivery {
+  delivery_id      Int       @id @default(autoincrement())
+  order_id         Int
+  courier_id       Int
+  client_id        Int
+  delivery_type    String    @db.VarChar(50)
+  delivery_cost    Decimal   @default(0) @db.Decimal(10, 2)
+  payment_method   String    @db.VarChar(20)
+  delivery_status  String    @default("pending") @db.VarChar(30)
+  start_time       DateTime?
+  end_time         DateTime?
+  desired_duration Decimal?  @db.Decimal(4, 1) //потрібно якось обробити щоб це працювало норм, поки це в годинах?
+  warehouse_id     Int
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @updatedAt
+
+  order     Order     @relation(fields: [order_id], references: [order_id])
+  courier   Courier   @relation(fields: [courier_id], references: [courier_id])
+  warehouse Warehouse @relation(fields: [warehouse_id], references: [warehouse_id])
+  Client    Client?   @relation(fields: [client_id], references: [client_id])
+
+  @@map("deliveries")
+}
+
+model Feedback {
+  feedback_id Int      @id @default(autoincrement())
+  client_id   Int
+  courier_id  Int
+  rating      Int
+  comment     String   @db.VarChar(255)
+  created_at  DateTime @default(now())
+
+  client  Client  @relation(fields: [client_id], references: [client_id])
+  courier Courier @relation(fields: [courier_id], references: [courier_id])
+
+  @@map("feedbacks")
+}
+
+model CourierSchedule {
+  schedule_id     Int      @id @default(autoincrement())
+  courier_id      Int
+  schedule_status String   @db.VarChar(20)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  courier               Courier                 @relation(fields: [courier_id], references: [courier_id])
+  CourierWeeklySchedule CourierWeeklySchedule[]
+
+  @@map("courier_schedules")
+}
+
+model CourierWeeklySchedule {
+  schedule_id    Int       @id
+  day_of_week    Int
+  start_time     DateTime?
+  end_time       DateTime?
+  is_working_day Boolean
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
+
+  courierSchedule CourierSchedule @relation(fields: [schedule_id], references: [schedule_id])
+
+  @@unique([schedule_id, day_of_week])
+  @@map("courier_weekly_schedules")
+}
