@@ -6,27 +6,29 @@ import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { JwtService } from "@nestjs/jwt";
 import { ConfigService } from "@nestjs/config";
 import { access } from "fs";
+import { UserService } from "src/modules/user/user.service";
 
 @Injectable()
 export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwt: JwtService,
-    private config: ConfigService
+    private config: ConfigService,
+    private userService: UserService,
   ) { }
 
   async signup(dto: AuthDto) {
     const hash = await argon.hash(dto.password);
     try {
-      const user = await this.prisma.user.create({
-        data: {
-          email: dto.email,
-          hash,
-          phoneNumber: dto.phoneNumber,
-          first_name: dto.firstName,
-          last_name: dto.lastName,
-          role: dto.role,
-        },
+      console.log("dtoo", dto)
+      const user = await this.userService.createUser({
+        email: dto.email,
+        password: hash,
+        phoneNumber: dto.phoneNumber,
+        firstName: dto.firstName,
+        lastName: dto.lastName,
+        role: dto.role,
+        vehicle: dto.vehicle,
       });
 
       return this.signToken(user.user_id, user.email);
