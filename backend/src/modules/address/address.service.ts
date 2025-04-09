@@ -1,26 +1,72 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateAddressDto } from './dto/create-address.dto';
 import { UpdateAddressDto } from './dto/update-address.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class AddressService {
-  create(createAddressDto: CreateAddressDto) {
-    return 'This action adds a new address';
+  constructor(private prisma: PrismaService) { }
+
+  async createAddress(dto: CreateAddressDto) {
+    return await this.prisma.address.create({
+      data: {
+        street_name: dto.streetName,
+        building_number: dto.buildingNumber,
+        apartment_number: dto.apartmentNumber,
+        city: dto.city,
+        country: dto.country,
+      },
+    });
   }
 
-  findAll() {
-    return `This action returns all address`;
+  async getAllAddress() {
+    return this.prisma.address.findMany();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} address`;
+  async getAddressById(id: number) {
+    const address = await this.prisma.address.findUnique({
+      where: { address_id: id },
+    });
+    if (!address) {
+      throw new NotFoundException(`Address with ID ${id} not found`);
+    }
+    return address;
   }
 
-  update(id: number, updateAddressDto: UpdateAddressDto) {
-    return `This action updates a #${id} address`;
+  async updateAddress(id: number, dto: UpdateAddressDto) {
+    const address = await this.prisma.address.findUnique({
+      where: { address_id: id },
+    });
+
+    if (!address) {
+      throw new NotFoundException(`Address with ID ${id} not found`);
+    }
+
+    return this.prisma.address.update({
+      where: { address_id: id },
+      data: {
+        street_name: dto.streetName,
+        building_number: dto.buildingNumber,
+        apartment_number: dto.apartmentNumber,
+        city: dto.city,
+        country: dto.country,
+      },
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} address`;
+  async deleteAddress(id: number) {
+    const address = await this.prisma.address.findUnique({
+      where: { address_id: id },
+    });
+
+    if (!address) {
+      throw new Error(`Address with ID ${id} not found`);
+    }
+
+    await this.prisma.address.delete({
+      where: { address_id: id },
+    });
+
+    return { message: `Address with ID ${id} deleted successfully` };
   }
 }

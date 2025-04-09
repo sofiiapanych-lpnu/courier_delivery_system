@@ -67,12 +67,12 @@ model Courier {
 }
 
 model Vehicle {
-  license_plate  String   @id @db.VarChar(20)
-  model          String   @db.VarChar(50)
-  transport_type String   @db.VarChar(20)
-  capacity       Int
-  created_at     DateTime @default(now())
-  updated_at     DateTime @updatedAt
+  license_plate    String   @id @db.VarChar(20)
+  model            String   @db.VarChar(50)
+  transport_type   String   @db.VarChar(20)
+  is_company_owner Boolean
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
 
   Courier Courier?
 

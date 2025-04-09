@@ -1,10 +1,12 @@
 import { Module } from '@nestjs/common';
 import { CourierService } from './courier.service';
-import { VehicleService } from 'src/modules/vehicle/vehicle.service';
+import { CourierController } from './courier.controller';
+import { VehicleModule } from 'src/modules/vehicle/vehicle.module';
 
 @Module({
-  controllers: [],
-  providers: [VehicleService],
+  imports: [VehicleModule],
+  controllers: [CourierController],
+  providers: [CourierService],
   exports: [CourierService],
 })
 export class CourierModule { }

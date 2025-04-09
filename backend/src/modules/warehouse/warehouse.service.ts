@@ -1,26 +1,68 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateWarehouseDto } from './dto/create-warehouse.dto';
 import { UpdateWarehouseDto } from './dto/update-warehouse.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class WarehouseService {
-  create(createWarehouseDto: CreateWarehouseDto) {
-    return 'This action adds a new warehouse';
+  constructor(private prisma: PrismaService) { }
+
+  async createWarehouse(dto: CreateWarehouseDto) {
+    return await this.prisma.warehouse.create({
+      data: {
+        address_id: dto.addressId,
+        name: dto.name,
+        contact_number: dto.contactNumber,
+      },
+    });
   }
 
-  findAll() {
-    return `This action returns all warehouse`;
+  async getAllWarehouse() {
+    return this.prisma.warehouse.findMany();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} warehouse`;
+  async getWarehouseById(id: number) {
+    const warehouse = await this.prisma.warehouse.findUnique({
+      where: { warehouse_id: id },
+    });
+    if (!warehouse) {
+      throw new NotFoundException(`Warehouse with ID ${id} not found`);
+    }
+    return warehouse;
   }
 
-  update(id: number, updateWarehouseDto: UpdateWarehouseDto) {
-    return `This action updates a #${id} warehouse`;
+  async updateWarehouse(id: number, dto: UpdateWarehouseDto) {
+    const warehouse = await this.prisma.warehouse.findUnique({
+      where: { warehouse_id: id },
+    });
+
+    if (!warehouse) {
+      throw new NotFoundException(`Warehouse with ID ${id} not found`);
+    }
+
+    return this.prisma.warehouse.update({
+      where: { warehouse_id: id },
+      data: {
+        address_id: dto.addressId,
+        name: dto.name,
+        contact_number: dto.contactNumber,
+      },
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} warehouse`;
+  async deleteWarehouse(id: number) {
+    const warehouse = await this.prisma.warehouse.findUnique({
+      where: { warehouse_id: id },
+    });
+
+    if (!warehouse) {
+      throw new Error(`Warehouse with ID ${id} not found`);
+    }
+
+    await this.prisma.warehouse.delete({
+      where: { warehouse_id: id },
+    });
+
+    return { message: `Warehouse with ID ${id} deleted successfully` };
   }
 }

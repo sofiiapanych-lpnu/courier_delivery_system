@@ -1,4 +1,4 @@
-import { IsString, Length, IsInt } from "class-validator";
+import { IsString, Length, IsBoolean } from "class-validator";
 
 export class CreateVehicleDto {
   @IsString()
@@ -13,6 +13,6 @@ export class CreateVehicleDto {
   @Length(1, 20)
   transportType: string;
 
-  @IsInt()
-  capacity: number;
+  @IsBoolean()
+  isCompanyOwner: boolean;
 }

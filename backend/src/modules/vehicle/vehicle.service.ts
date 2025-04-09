@@ -15,7 +15,7 @@ export class VehicleService {
         license_plate: dto.licensePlate,
         model: dto.model,
         transport_type: dto.transportType,
-        capacity: dto.capacity,
+        is_company_owner: dto.isCompanyOwner,
       },
     });
   }
@@ -51,7 +51,7 @@ export class VehicleService {
         license_plate: dto.licensePlate,
         model: dto.model,
         transport_type: dto.transportType,
-        capacity: dto.capacity,
+        is_company_owner: dto.isCompanyOwner,
       },
     });
   }

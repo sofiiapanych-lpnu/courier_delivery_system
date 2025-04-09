@@ -13,6 +13,8 @@ import { DeliveryModule } from './modules/delivery/delivery.module';
 import { FeedbackModule } from './modules/feedback/feedback.module';
 import { CourierScheduleModule } from './modules/courier-schedule/courier-schedule.module';
 import { CourierWeeklyScheduleModule } from './modules/courier-weekly-schedule/courier-weekly-schedule.module';
+import { CourierModule } from './modules/user/courier/courier.module';
+import { ClientModule } from './modules/user/client/client.module';
 
 @Module({
   imports: [
@@ -21,6 +23,8 @@ import { CourierWeeklyScheduleModule } from './modules/courier-weekly-schedule/c
     }),
     AuthModel,
     UserModule,
+    CourierModule,
+    ClientModule,
     PrismaModule,
     VehicleModule,
     AddressModule,

@@ -1,26 +1,56 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { Order } from '@prisma/client';
 
 @Injectable()
 export class OrderService {
-  create(createOrderDto: CreateOrderDto) {
-    return 'This action adds a new order';
+  constructor(private prisma: PrismaService) { }
+
+  async createOrder(dto: CreateOrderDto): Promise<Order> {
+    return await this.prisma.order.create({
+      data: {
+        order_type: dto.orderType,
+        description: dto.description,
+        cost: dto.cost,
+        payment_method: dto.paymentMethod,
+        weight: dto.weight,
+        length: dto.length,
+        width: dto.width,
+        height: dto.height,
+      }
+    });
   }
 
-  findAll() {
-    return `This action returns all order`;
+  async getAllOrder(): Promise<Order[]> {
+    return await this.prisma.order.findMany();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} order`;
+  async getOrderById(id: number): Promise<Order> {
+    const order = await this.prisma.order.findUnique({ where: { order_id: id } });
+
+    if (!order) {
+      throw new Error(`Courier with ID ${id} not found`);
+    }
+
+    return order;
   }
 
-  update(id: number, updateOrderDto: UpdateOrderDto) {
-    return `This action updates a #${id} order`;
+  async updateOrder(id: number, dto: UpdateOrderDto) {
+    const existing = await this.getOrderById(id);
+    if (!existing) throw new NotFoundException('Order not found');
+
+    return this.prisma.order.update({
+      where: { order_id: id },
+      data: dto,
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} order`;
+  async deleteOrder(id: number) {
+    const existing = await this.getOrderById(id);
+    if (!existing) throw new NotFoundException('Order not found');
+
+    return this.prisma.order.delete({ where: { order_id: id } });
   }
 }

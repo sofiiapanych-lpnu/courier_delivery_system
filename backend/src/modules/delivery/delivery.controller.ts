@@ -1,34 +1,35 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put } from '@nestjs/common';
 import { DeliveryService } from './delivery.service';
 import { CreateDeliveryDto } from './dto/create-delivery.dto';
 import { UpdateDeliveryDto } from './dto/update-delivery.dto';
 
 @Controller('delivery')
 export class DeliveryController {
-  constructor(private readonly deliveryService: DeliveryService) {}
+  constructor(private readonly deliveryService: DeliveryService) { }
 
   @Post()
-  create(@Body() createDeliveryDto: CreateDeliveryDto) {
-    return this.deliveryService.create(createDeliveryDto);
+  createDelivery(@Body() createDeliveryDto: CreateDeliveryDto) {
+    return this.deliveryService.createDelivery
+      (createDeliveryDto);
   }
 
   @Get()
-  findAll() {
-    return this.deliveryService.findAll();
+  getAllDelivery() {
+    return this.deliveryService.getAllDelivery();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.deliveryService.findOne(+id);
+  getDeliveryById(@Param('id') id: string) {
+    return this.deliveryService.getDeliveryById(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateDeliveryDto: UpdateDeliveryDto) {
-    return this.deliveryService.update(+id, updateDeliveryDto);
+  @Put(':id')
+  updateDelivery(@Param('id') id: string, @Body() updateDeliveryDto: UpdateDeliveryDto) {
+    return this.deliveryService.updateDelivery(+id, updateDeliveryDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.deliveryService.remove(+id);
+  deleteDelivery(@Param('id') id: string) {
+    return this.deliveryService.deleteDelivery(+id);
   }
 }

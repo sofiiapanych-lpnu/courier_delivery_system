@@ -1,34 +1,34 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put } from '@nestjs/common';
 import { CourierScheduleService } from './courier-schedule.service';
 import { CreateCourierScheduleDto } from './dto/create-courier-schedule.dto';
 import { UpdateCourierScheduleDto } from './dto/update-courier-schedule.dto';
 
 @Controller('courier-schedule')
 export class CourierScheduleController {
-  constructor(private readonly courierScheduleService: CourierScheduleService) {}
+  constructor(private readonly courierScheduleService: CourierScheduleService) { }
 
   @Post()
-  create(@Body() createCourierScheduleDto: CreateCourierScheduleDto) {
-    return this.courierScheduleService.create(createCourierScheduleDto);
+  createCourierSchedule(@Body() createCourierScheduleDto: CreateCourierScheduleDto) {
+    return this.courierScheduleService.createCourierSchedule(createCourierScheduleDto);
   }
 
   @Get()
-  findAll() {
-    return this.courierScheduleService.findAll();
+  getAllCourierSchedule() {
+    return this.courierScheduleService.getAllCourierSchedule();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.courierScheduleService.findOne(+id);
+  getCourierScheduleById(@Param('id') id: string) {
+    return this.courierScheduleService.getCourierScheduleById(+id);
   }
 
-  @Patch(':id')
+  @Put(':id')
   update(@Param('id') id: string, @Body() updateCourierScheduleDto: UpdateCourierScheduleDto) {
-    return this.courierScheduleService.update(+id, updateCourierScheduleDto);
+    return this.courierScheduleService.updateCourierSchedule(+id, updateCourierScheduleDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.courierScheduleService.remove(+id);
+  deleteCourierSchedule(@Param('id') id: string) {
+    return this.courierScheduleService.deleteCourierSchedule(+id);
   }
 }
