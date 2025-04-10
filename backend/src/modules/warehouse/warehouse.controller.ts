@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Put, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Put, Param, Delete, Query } from '@nestjs/common';
 import { WarehouseService } from './warehouse.service';
 import { CreateWarehouseDto } from './dto/create-warehouse.dto';
 import { UpdateWarehouseDto } from './dto/update-warehouse.dto';
@@ -13,8 +13,18 @@ export class WarehouseController {
   }
 
   @Get()
-  getAllWarehouse() {
-    return this.warehouseService.getAllWarehouse();
+  getAllWarehouse(
+    @Query('name') name?: string,
+    @Query('contactNumber') contactNumber?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.warehouseService.getAllWarehouse({
+      name,
+      contactNumber,
+      page: page ? parseInt(page) : undefined,
+      limit: limit ? parseInt(limit) : undefined,
+    });
   }
 
   @Get(':id')

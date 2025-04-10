@@ -2,12 +2,13 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateWarehouseDto } from './dto/create-warehouse.dto';
 import { UpdateWarehouseDto } from './dto/update-warehouse.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { Prisma, Warehouse } from '@prisma/client';
 
 @Injectable()
 export class WarehouseService {
   constructor(private prisma: PrismaService) { }
 
-  async createWarehouse(dto: CreateWarehouseDto) {
+  async createWarehouse(dto: CreateWarehouseDto): Promise<Warehouse> {
     return await this.prisma.warehouse.create({
       data: {
         address_id: dto.addressId,
@@ -17,11 +18,29 @@ export class WarehouseService {
     });
   }
 
-  async getAllWarehouse() {
-    return this.prisma.warehouse.findMany();
+  async getAllWarehouse(query: {
+    name?: string;
+    contactNumber?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<Warehouse[]> {
+    const { name, contactNumber, page = 1, limit = 10 } = query;
+    const skip = (page - 1) * limit;
+
+    return this.prisma.warehouse.findMany({
+      where: {
+        AND: [
+          name ? { name: { contains: name, mode: 'insensitive' } } : {},
+          contactNumber ? { contact_number: { contains: contactNumber, mode: 'insensitive' } } : {},
+        ],
+      },
+      skip,
+      take: limit,
+    });
   }
 
-  async getWarehouseById(id: number) {
+
+  async getWarehouseById(id: number): Promise<Warehouse> {
     const warehouse = await this.prisma.warehouse.findUnique({
       where: { warehouse_id: id },
     });
@@ -31,7 +50,7 @@ export class WarehouseService {
     return warehouse;
   }
 
-  async updateWarehouse(id: number, dto: UpdateWarehouseDto) {
+  async updateWarehouse(id: number, dto: UpdateWarehouseDto): Promise<Warehouse> {
     const warehouse = await this.prisma.warehouse.findUnique({
       where: { warehouse_id: id },
     });
@@ -50,7 +69,7 @@ export class WarehouseService {
     });
   }
 
-  async deleteWarehouse(id: number) {
+  async deleteWarehouse(id: number): Promise<{ message: string }> {
     const warehouse = await this.prisma.warehouse.findUnique({
       where: { warehouse_id: id },
     });

@@ -95,6 +95,7 @@ model Address {
   warehouses Warehouse[]
   Delivery   Delivery[]
 
+  @@unique([street_name, building_number, apartment_number, city, country])
   @@map("addresses")
 }
 
