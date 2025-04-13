@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Put, Query } from '@nestjs/common';
 import { VehicleService } from './vehicle.service';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
 import { UpdateVehicleDto } from './dto/update-vehicle.dto';
@@ -8,14 +8,29 @@ import { Vehicle } from '@prisma/client';
 export class VehicleController {
   constructor(private readonly vehicleService: VehicleService) { }
 
-  @Post('createVehicle')
+  @Post()
   createVehicle(@Body() createVehicleDto: CreateVehicleDto) {
     return this.vehicleService.createVehicle(createVehicleDto);
   }
 
   @Get()
-  async getAllVehicles(): Promise<Vehicle[]> {
-    return this.vehicleService.getAllVehicles();
+  async getAllVehicles(
+    @Query('licensePlate') licensePlate?: string,
+    @Query('model') model?: string,
+    @Query('transportType') transportType?: string,
+    @Query('isCompanyOwner') isCompanyOwner?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ): Promise<Vehicle[]> {
+    const query = {
+      licensePlate,
+      model,
+      transportType,
+      isCompanyOwner: isCompanyOwner !== undefined ? isCompanyOwner === 'true' : undefined,
+      page: page ? parseInt(page, 10) : undefined,
+      limit: limit ? parseInt(limit, 10) : undefined,
+    };
+    return this.vehicleService.getAllVehicles(query);
   }
 
   @Get(':vehicleId')

@@ -2,12 +2,13 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCourierScheduleDto } from './dto/create-courier-schedule.dto';
 import { UpdateCourierScheduleDto } from './dto/update-courier-schedule.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { CourierSchedule } from '@prisma/client';
 
 @Injectable()
 export class CourierScheduleService {
   constructor(private prisma: PrismaService) { }
 
-  async createCourierSchedule(dto: CreateCourierScheduleDto) {
+  async createCourierSchedule(dto: CreateCourierScheduleDto): Promise<CourierSchedule> {
     return await this.prisma.courierSchedule.create({
       data: {
         courier_id: dto.courierId,
@@ -16,11 +17,28 @@ export class CourierScheduleService {
     });
   }
 
-  async getAllCourierSchedule() {
-    return this.prisma.courierSchedule.findMany();
+  async getAllCourierSchedule(query: {
+    courierId?: number;
+    scheduleStatus?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<CourierSchedule[]> {
+    const { courierId, scheduleStatus, page = 1, limit = 10 } = query;
+    const skip = (page - 1) * limit;
+    return this.prisma.courierSchedule.findMany({
+      where: {
+        AND: [
+          courierId !== undefined ? { courier_id: courierId } : {},
+          scheduleStatus ? { schedule_status: { contains: scheduleStatus, mode: 'insensitive' } } : {},
+        ]
+      }
+      ,
+      skip,
+      take: limit,
+    });
   }
 
-  async getCourierScheduleById(id: number) {
+  async getCourierScheduleById(id: number): Promise<CourierSchedule> {
     const courierSchedule = await this.prisma.courierSchedule.findUnique({
       where: { schedule_id: id },
     });
@@ -30,7 +48,7 @@ export class CourierScheduleService {
     return courierSchedule;
   }
 
-  async updateCourierSchedule(id: number, dto: UpdateCourierScheduleDto) {
+  async updateCourierSchedule(id: number, dto: UpdateCourierScheduleDto): Promise<CourierSchedule> {
     const courierSchedule = await this.prisma.courierSchedule.findUnique({
       where: { schedule_id: id },
     });
@@ -48,7 +66,7 @@ export class CourierScheduleService {
     });
   }
 
-  async deleteCourierSchedule(id: number) {
+  async deleteCourierSchedule(id: number): Promise<{ message: string }> {
     const courierSchedule = await this.prisma.courierSchedule.findUnique({
       where: { schedule_id: id },
     });

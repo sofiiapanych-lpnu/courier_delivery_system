@@ -23,8 +23,36 @@ export class OrderService {
     });
   }
 
-  async getAllOrder(): Promise<Order[]> {
-    return await this.prisma.order.findMany();
+  async getAllOrder(query: {
+    orderType?: string;
+    description?: string;
+    cost?: number;
+    paymentMethod?: string;
+    weight?: number;
+    length?: number;
+    width?: number;
+    height?: number;
+    page?: number;
+    limit?: number;
+  }): Promise<Order[]> {
+    const { orderType, description, cost, paymentMethod, weight, length, width, height, page = 1, limit = 10 } = query;
+    const skip = (page - 1) * limit;
+    return await this.prisma.order.findMany({
+      where: {
+        AND: [
+          orderType ? { order_type: { contains: orderType, mode: 'insensitive' } } : {},
+          description ? { description: { contains: description, mode: 'insensitive' } } : {},
+          cost !== undefined ? { cost: cost } : {},
+          paymentMethod ? { paymentMethod: { contains: paymentMethod, mode: 'insensitive' } } : {},
+          weight !== undefined ? { weight: weight } : {},
+          length !== undefined ? { length: length } : {},
+          width !== undefined ? { width: width } : {},
+          height !== undefined ? { height: height } : {},
+        ]
+      },
+      skip,
+      take: limit,
+    });
   }
 
   async getOrderById(id: number): Promise<Order> {

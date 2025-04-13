@@ -2,69 +2,94 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCourierWeeklyScheduleDto } from './dto/create-courier-weekly-schedule.dto';
 import { UpdateCourierWeeklyScheduleDto } from './dto/update-courier-weekly-schedule.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { CourierWeeklySchedule } from '@prisma/client';
 
 @Injectable()
 export class CourierWeeklyScheduleService {
   constructor(private prisma: PrismaService) { }
 
-  async createCourierWeeklySchedule(dto: CreateCourierWeeklyScheduleDto) {
+  async createCourierWeeklySchedule(dto: CreateCourierWeeklyScheduleDto): Promise<CourierWeeklySchedule> {
     return await this.prisma.courierWeeklySchedule.create({
       data: {
-        schedule_id: dto.schedule_id,
-        day_of_week: dto.day_of_week,
-        start_time: dto.start_time,
-        end_time: dto.end_time,
-        is_working_day: dto.is_working_day,
+        schedule_id: dto.scheduleId,
+        day_of_week: dto.dayOfWeek,
+        start_time: dto.startTime,
+        end_time: dto.endTime,
+        is_working_day: dto.isWorkingDay,
       },
     });
   }
 
-  async getAllCourierWeeklySchedule() {
-    return this.prisma.courierWeeklySchedule.findMany();
+  async getAllCourierWeeklySchedule(query: {
+    scheduleId?: number;
+    dayOfWeek?: number;
+    startTime?: string;
+    endTime?: string;
+    isWorkingDay?: boolean;
+    page?: number;
+    limit?: number;
+  }
+  ): Promise<CourierWeeklySchedule[]> {
+    const { scheduleId, dayOfWeek, startTime, endTime, isWorkingDay, page = 1, limit = 10 } = query;
+    const skip = (page - 1) * limit;
+
+    return this.prisma.courierWeeklySchedule.findMany({
+      where: {
+        AND: [
+          scheduleId !== undefined ? { schedule_id: scheduleId } : {},
+          dayOfWeek !== undefined ? { day_of_week: dayOfWeek } : {},
+          startTime ? { start_time: { equals: new Date(startTime) } } : {},
+          endTime ? { end_time: { equals: new Date(endTime) } } : {},
+          isWorkingDay !== undefined ? { is_working_day: isWorkingDay } : {},
+        ]
+      },
+      skip,
+      take: limit,
+    });
   }
 
-  async getCourierWeeklyScheduleById(id: number) {
-    const address = await this.prisma.courierWeeklySchedule.findUnique({
-      where: { schedule_id: id },
+  async getCourierWeeklyScheduleById(id: number): Promise<CourierWeeklySchedule> {
+    const weeklySchedule = await this.prisma.courierWeeklySchedule.findUnique({
+      where: { weekly_id: id },
     });
-    if (!address) {
+    if (!weeklySchedule) {
       throw new NotFoundException(`Weekly Schedule with ID ${id} not found`);
     }
-    return address;
+    return weeklySchedule;
   }
 
-  async updateCourierWeeklySchedule(id: number, dto: UpdateCourierWeeklyScheduleDto) {
-    const address = await this.prisma.courierWeeklySchedule.findUnique({
-      where: { schedule_id: id },
+  async updateCourierWeeklySchedule(id: number, dto: UpdateCourierWeeklyScheduleDto): Promise<CourierWeeklySchedule> {
+    const weeklySchedule = await this.prisma.courierWeeklySchedule.findUnique({
+      where: { weekly_id: id },
     });
 
-    if (!address) {
+    if (!weeklySchedule) {
       throw new NotFoundException(`Weekly Schedule with ID ${id} not found`);
     }
 
     return this.prisma.courierWeeklySchedule.update({
-      where: { schedule_id: id },
+      where: { weekly_id: id },
       data: {
-        schedule_id: dto.schedule_id,
-        day_of_week: dto.day_of_week,
-        start_time: dto.start_time,
-        end_time: dto.end_time,
-        is_working_day: dto.is_working_day,
+        schedule_id: dto.scheduleId,
+        day_of_week: dto.dayOfWeek,
+        start_time: dto.startTime,
+        end_time: dto.endTime,
+        is_working_day: dto.isWorkingDay,
       },
     });
   }
 
-  async deleteCourierWeeklySchedule(id: number) {
-    const address = await this.prisma.courierWeeklySchedule.findUnique({
-      where: { schedule_id: id },
+  async deleteCourierWeeklySchedule(id: number): Promise<{ message: string }> {
+    const weeklySchedule = await this.prisma.courierWeeklySchedule.findUnique({
+      where: { weekly_id: id },
     });
 
-    if (!address) {
+    if (!weeklySchedule) {
       throw new Error(`Weekly Schedule with ID ${id} not found`);
     }
 
     await this.prisma.courierWeeklySchedule.delete({
-      where: { schedule_id: id },
+      where: { weekly_id: id },
     });
 
     return { message: `Weekly Schedule with ID ${id} deleted successfully` };

@@ -24,7 +24,7 @@ export class UserService {
         data: {
           email: dto.email,
           hash: dto.password,
-          phoneNumber: dto.phoneNumber,
+          phone_number: dto.phoneNumber,
           first_name: dto.firstName,
           last_name: dto.lastName,
           role: dto.role,
@@ -56,8 +56,30 @@ export class UserService {
     return user;
   }
 
-  async getAllUsers(): Promise<User[]> {
-    return this.prisma.user.findMany();
+  async getAllUsers(query: {
+    email?: string;
+    phoneNumber?: string;
+    firstName?: string
+    lastName?: string;
+    role?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<User[]> {
+    const { email, phoneNumber, firstName, lastName, role, page = 1, limit = 10 } = query;
+    const skip = (page - 1) * limit;
+    return this.prisma.user.findMany({
+      where: {
+        AND: [
+          email ? { email: { contains: email, mode: 'insensitive' } } : {},
+          phoneNumber ? { phone_number: { contains: phoneNumber, mode: 'insensitive' } } : {},
+          firstName ? { first_name: { contains: firstName, mode: 'insensitive' } } : {},
+          lastName ? { last_name: { contains: lastName, mode: 'insensitive' } } : {},
+          role ? { role: { contains: role, mode: 'insensitive' } } : {},
+        ]
+      },
+      skip,
+      take: limit,
+    });
   }
 
   async getUserById(userId: number): Promise<User> {
@@ -91,7 +113,7 @@ export class UserService {
       where: { user_id: userId },
       data: {
         email: dto.email,
-        phoneNumber: dto.phoneNumber,
+        phone_number: dto.phoneNumber,
         first_name: dto.firstName,
         last_name: dto.lastName,
         ...(hashedPassword && { hash: hashedPassword }),

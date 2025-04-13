@@ -18,9 +18,9 @@ model User {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  email       String @unique @db.VarChar()
-  hash        String @db.VarChar()
-  phoneNumber String @unique @db.VarChar(20)
+  email        String @unique @db.VarChar()
+  hash         String @db.VarChar()
+  phone_number String @unique @db.VarChar(20)
 
   first_name String @db.VarChar(20)
   last_name  String @db.VarChar(20)
@@ -185,7 +185,8 @@ model CourierSchedule {
 }
 
 model CourierWeeklySchedule {
-  schedule_id    Int       @id
+  weekly_id      Int       @id @default(autoincrement())
+  schedule_id    Int
   day_of_week    Int
   start_time     DateTime?
   end_time       DateTime?

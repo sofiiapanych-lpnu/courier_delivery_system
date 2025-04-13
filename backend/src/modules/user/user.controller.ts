@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { CreateUserDto, UpdateUserDto } from './dto';
 import { UserService } from './user.service';
@@ -13,8 +13,25 @@ export class UserController {
   }
 
   @Get()
-  async getAllUsers(): Promise<User[]> {
-    return this.userService.getAllUsers();
+  async getAllUsers(
+    @Query('email') email?: string,
+    @Query('phoneNumber') phoneNumber?: string,
+    @Query('firstName') firstName?: string,
+    @Query('lastName') lastName?: string,
+    @Query('role') role?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ): Promise<User[]> {
+    const query = {
+      email,
+      phoneNumber,
+      firstName,
+      lastName,
+      role,
+      page: page ? parseInt(page, 10) : undefined,
+      limit: limit ? parseInt(limit, 10) : undefined,
+    }
+    return this.userService.getAllUsers(query);
   }
 
   @Get(':userId')

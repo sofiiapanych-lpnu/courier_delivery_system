@@ -2,19 +2,19 @@ import { IsBoolean, IsDateString, IsInt, IsOptional } from 'class-validator';
 
 export class CreateCourierWeeklyScheduleDto {
   @IsInt()
-  schedule_id: number;
+  scheduleId: number;
 
   @IsInt()
-  day_of_week: number;
+  dayOfWeek: number;
 
   @IsOptional()
   @IsDateString()
-  start_time?: string;
+  startTime?: string;
 
   @IsOptional()
   @IsDateString()
-  end_time?: string;
+  endTime?: string;
 
   @IsBoolean()
-  is_working_day: boolean;
+  isWorkingDay: boolean;
 }

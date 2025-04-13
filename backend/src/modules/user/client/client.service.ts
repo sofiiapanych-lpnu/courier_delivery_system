@@ -16,8 +16,34 @@ export class ClientService {
     });
   }
 
-  async getAllClients(): Promise<Client[]> {
-    return this.prisma.client.findMany();
+  async getAllClients(query: {
+    firstName?: string;
+    lastName?: string;
+    phoneNumber?: string;
+    email?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<Client[]> {
+    const { firstName, lastName, phoneNumber, email, page = 1, limit = 10, } = query;
+    const skip = (page - 1) * limit;
+
+    return this.prisma.client.findMany({
+      where: {
+        user: {
+          AND: [
+            firstName ? { first_name: { contains: firstName, mode: 'insensitive' } } : {},
+            lastName ? { last_name: { contains: lastName, mode: 'insensitive' } } : {},
+            phoneNumber ? { phone_number: { contains: phoneNumber, mode: 'insensitive' } } : {},
+            email ? { email: { contains: email, mode: 'insensitive' } } : {},
+          ]
+        }
+      },
+      skip,
+      take: limit,
+      include: {
+        user: true, // Щоб повернути також інформацію з User
+      },
+    });
   }
 
   async getClientById(id: number): Promise<Client> {

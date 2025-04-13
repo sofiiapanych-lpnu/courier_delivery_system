@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, ParseIntPipe, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, ParseIntPipe, Post, Put, Query } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ClientService } from './client.service';
 import { CreateClientDto, UpdateClientDto } from './dto';
@@ -25,8 +25,23 @@ export class ClientController {
   }
 
   @Get()
-  async getAllClients() {
-    return this.clientService.getAllClients();
+  async getAllClients(
+    @Query('firstName') firstName?: string,
+    @Query('lastName') lastName?: string,
+    @Query('phoneNumber') phoneNumber?: string,
+    @Query('email') email?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    const query = {
+      firstName,
+      lastName,
+      phoneNumber,
+      email,
+      page: page ? parseInt(page, 10) : undefined,
+      limit: limit ? parseInt(limit, 10) : undefined,
+    }
+    return this.clientService.getAllClients(query);
   }
 
   @Get(':id')

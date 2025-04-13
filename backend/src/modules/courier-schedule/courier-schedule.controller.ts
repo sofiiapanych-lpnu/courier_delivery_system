@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put, Query } from '@nestjs/common';
 import { CourierScheduleService } from './courier-schedule.service';
 import { CreateCourierScheduleDto } from './dto/create-courier-schedule.dto';
 import { UpdateCourierScheduleDto } from './dto/update-courier-schedule.dto';
@@ -13,8 +13,19 @@ export class CourierScheduleController {
   }
 
   @Get()
-  getAllCourierSchedule() {
-    return this.courierScheduleService.getAllCourierSchedule();
+  getAllCourierSchedule(
+    @Query('courierId') courierId?: string,
+    @Query('scheduleStatus') scheduleStatus?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    const query = {
+      courierId: courierId ? parseInt(courierId, 10) : undefined,
+      scheduleStatus,
+      page: page ? parseInt(page, 10) : undefined,
+      limit: limit ? parseInt(limit, 10) : undefined,
+    };
+    return this.courierScheduleService.getAllCourierSchedule(query);
   }
 
   @Get(':id')

@@ -19,8 +19,30 @@ export class AddressService {
     });
   }
 
-  async getAllAddress() {
-    return this.prisma.address.findMany();
+  async getAllAddress(query: {
+    streetName?: string;
+    buildingNumber?: number;
+    apartmentNumber?: number;
+    city?: string;
+    country?: string;
+    page?: number;
+    limit?: number;
+  }) {
+    const { streetName, buildingNumber, apartmentNumber, city, country, page = 1, limit = 10 } = query;
+    const skip = (page - 1) * limit;
+    return this.prisma.address.findMany({
+      where: {
+        AND: [
+          streetName ? { street_name: { contains: streetName, mode: 'insensitive' } } : {},
+          buildingNumber !== undefined ? { building_number: buildingNumber } : {},
+          apartmentNumber !== undefined ? { apartment_number: apartmentNumber } : {},
+          city ? { city: { contains: city, mode: 'insensitive' } } : {},
+          country ? { country: { contains: country, mode: 'insensitive' } } : {},
+        ]
+      },
+      skip,
+      take: limit,
+    });
   }
 
   async getAddressById(id: number) {

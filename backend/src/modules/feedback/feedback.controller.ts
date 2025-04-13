@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Delete, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete, Put, Query } from '@nestjs/common';
 import { FeedbackService } from './feedback.service';
 import { CreateFeedbackDto } from './dto/create-feedback.dto';
 import { UpdateFeedbackDto } from './dto/update-feedback.dto';
@@ -13,8 +13,23 @@ export class FeedbackController {
   }
 
   @Get()
-  getAllFeedback() {
-    return this.feedbackService.getAllFeedback();
+  getAllFeedback(
+    @Query('clientId') clientId?: string,
+    @Query('courierId') courierId?: string,
+    @Query('rating') rating?: string,
+    @Query('comment') comment?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    const query = {
+      clientId: clientId ? parseInt(clientId, 10) : undefined,
+      courierId: courierId ? parseInt(courierId, 10) : undefined,
+      rating: rating ? parseInt(rating, 10) : undefined,
+      comment,
+      page: page ? parseInt(page, 10) : undefined,
+      limit: limit ? parseInt(limit, 10) : undefined,
+    }
+    return this.feedbackService.getAllFeedback(query);
   }
 
   @Get(':id')

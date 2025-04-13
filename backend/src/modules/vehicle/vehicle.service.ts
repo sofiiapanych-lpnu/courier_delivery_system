@@ -20,8 +20,28 @@ export class VehicleService {
     });
   }
 
-  async getAllVehicles(): Promise<Vehicle[]> {
-    return this.prisma.vehicle.findMany();
+  async getAllVehicles(query: {
+    licensePlate?: string;
+    model?: string;
+    transportType?: string;
+    isCompanyOwner?: boolean;
+    page?: number;
+    limit?: number;
+  }): Promise<Vehicle[]> {
+    const { licensePlate, model, transportType, isCompanyOwner, page = 1, limit = 10 } = query;
+    const skip = (page - 1) * limit;
+    return this.prisma.vehicle.findMany({
+      where: {
+        AND: [
+          licensePlate ? { license_plate: { contains: licensePlate, mode: 'insensitive' } } : {},
+          model ? { model: { contains: model, mode: 'insensitive' } } : {},
+          transportType ? { transport_type: { contains: transportType, mode: 'insensitive' } } : {},
+          isCompanyOwner !== undefined ? { is_company_owner: isCompanyOwner } : {},
+        ]
+      },
+      skip,
+      take: limit,
+    });
   }
 
   async getVehicleById(licensePlate: string): Promise<Vehicle> {

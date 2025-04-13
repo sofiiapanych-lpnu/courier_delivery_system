@@ -26,8 +26,50 @@ export class DeliveryService {
     });
   }
 
-  async getAllDelivery() {
-    return this.prisma.delivery.findMany();
+  async getAllDelivery(query: {
+    orderId?: number;
+    courierId?: number;
+    clientId?: number;
+    addressId?: number;
+    deliveryType?: string;
+    deliveryCost?: number;
+    paymentMethod?: string;
+    deliveryStatus?: string;
+    startTime?: Date;
+    endTime?: Date;
+    desiredDuration?: number;
+    warehouseId?: number;
+    page?: number;
+    limit?: number;
+  }) {
+    const { orderId, courierId, clientId, addressId, deliveryType,
+      deliveryCost, paymentMethod, deliveryStatus, startTime, endTime,
+      desiredDuration, warehouseId, page = 1, limit = 10, } = query;
+    const skip = (page - 1) * limit;
+
+    return this.prisma.delivery.findMany({
+      where: {
+        AND: [
+          orderId !== undefined ? { order_id: orderId } : {},
+          courierId !== undefined ? { courier_id: courierId } : {},
+          clientId !== undefined ? { client_id: clientId } : {},
+          addressId !== undefined ? { address_id: addressId } : {},
+          deliveryType ? { delivery_type: { contains: deliveryType, mode: 'insensitive' } } : {},
+          deliveryCost !== undefined ? { delivery_cost: deliveryCost } : {},
+          paymentMethod ? { payment_method: { contains: paymentMethod, mode: 'insensitive' } } : {},
+          deliveryStatus ? { delivery_status: { contains: deliveryStatus, mode: 'insensitive' } } : {},
+          desiredDuration !== undefined ? { desired_duration: desiredDuration } : {},
+          warehouseId !== undefined ? { warehouse_id: warehouseId } : {},
+          startTime ? { start_time: { gte: startTime } } : {},
+          endTime ? { end_time: { lte: endTime } } : {},
+        ]
+      },
+      skip,
+      take: limit,
+      orderBy: {
+        start_time: 'desc',
+      },
+    });
   }
 
   async getDeliveryById(id: number) {
