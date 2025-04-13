@@ -2,12 +2,14 @@ import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, ParseI
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CourierService } from './courier.service';
 import { CreateCourierDto, UpdateCourierDto } from './dto';
+import { DeliveryService } from 'src/modules/delivery/delivery.service';
 
 @Controller('courier')
 export class CourierController {
   constructor(
     private readonly courierService: CourierService,
-    private readonly prisma: PrismaService
+    private readonly prisma: PrismaService,
+    private readonly deliveryService: DeliveryService
   ) { }
 
   @Post()
@@ -53,6 +55,11 @@ export class CourierController {
     }
   }
 
+  @Get(':courierId/deliveries')
+  getDeliveryByCourierId(@Param('courierId') id: string) {
+    return this.deliveryService.getDeliveryByCourierId(+id);
+  }
+
   @Put(':id')
   async updateCourier(
     @Param('id', ParseIntPipe) id: number,
@@ -79,4 +86,6 @@ export class CourierController {
       );
     }
   }
+
+
 }

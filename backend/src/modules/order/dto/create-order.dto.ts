@@ -9,22 +9,22 @@ export class CreateOrderDto {
   @IsNotEmpty()
   description: string;
 
-  @IsDecimal()
+  @IsNumber()
   cost: number;
 
   @IsString()
   @IsNotEmpty()
   paymentMethod: string;
 
-  @IsDecimal()
+  @IsNumber()
   weight: number;
 
-  @IsDecimal()
+  @IsNumber()
   length: number;
 
-  @IsDecimal()
+  @IsNumber()
   width: number;
 
-  @IsDecimal()
+  @IsNumber()
   height: number;
 }

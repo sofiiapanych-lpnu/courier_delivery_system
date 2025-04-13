@@ -2,7 +2,7 @@ import { Type } from "class-transformer";
 import { IsEmail, IsNotEmpty, IsOptional, IsPhoneNumber, IsString, ValidateNested } from "class-validator"
 import { CreateVehicleDto } from "src/modules/vehicle/dto";
 
-export class AuthDto {
+export class SignupDto {
   @IsEmail()
   @IsNotEmpty()
   email: string

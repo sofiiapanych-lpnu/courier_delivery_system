@@ -125,4 +125,16 @@ export class DeliveryService {
 
     return { message: `Delivery with ID ${id} deleted successfully` };
   }
+
+  async getDeliveryByCourierId(id: number) {
+    const deliveries = await this.prisma.delivery.findMany({
+      where: { courier_id: id },
+    });
+
+    if (!deliveries || deliveries.length === 0) {
+      throw new NotFoundException(`No deliveries found for courier with ID ${id}`);
+    }
+
+    return deliveries;
+  }
 }

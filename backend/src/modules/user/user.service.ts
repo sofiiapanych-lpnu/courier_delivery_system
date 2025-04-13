@@ -85,6 +85,18 @@ export class UserService {
   async getUserById(userId: number): Promise<User> {
     const user = await this.prisma.user.findUnique({
       where: { user_id: userId },
+      include: {
+        Courier: {
+          include: {
+            vehicle: true,
+          },
+        },
+        Client: {
+          include: {
+            address: true,
+          },
+        },
+      },
     });
 
     if (!user) {
