@@ -40,6 +40,12 @@ const UserPage = () => {
               setDeliveries(res.data);
             })
             .catch(err => console.error("Failed to fetch deliveries", err));
+        } else if (userData.role === 'client' && userData.Client?.client_id) {
+          const clientId = userData.Client.client_id;
+
+          axios.get(`http://localhost:3000/client/${clientId}/deliveries`)
+            .then(res => setDeliveries(res.data))
+            .catch(err => console.error("Failed to fetch client deliveries", err));
         }
       })
       .catch((error) => {
@@ -48,34 +54,88 @@ const UserPage = () => {
   }, [user]);
 
   const handleUserUpdate = (updatedData) => {
-    axios.put(`http://localhost:3000/user/${user?.sub}`, updatedData)
-      .then(response => {
-        setUserInfo(response.data);
-      })
-      .catch(error => {
-        console.error('Error updating user data:', error);
-      });
+    if (isCourier) {
+      const courierId = userInfo?.Courier?.courier_id;
+      if (!courierId) return;
+
+      const cleanedData = {
+        vehicle: {
+          licensePlate: updatedData.license_plate,
+          model: updatedData.model,
+          transportType: updatedData.transport_type,
+          isCompanyOwner: Boolean(updatedData.owned_by_company),
+        },
+      };
+
+      console.log('cleanedData', cleanedData)
+
+      axios.put(`http://localhost:3000/courier/${courierId}`, cleanedData)
+        .then(response => {
+          console.log('Response from backend:', response.data);
+          setUserInfo(prev => ({
+            ...prev,
+            Courier: {
+              ...prev.Courier,
+              vehicle: response.data.vehicle,
+            },
+          }));
+          setIsModalOpen(false);
+        })
+        .catch(error => {
+          console.error('Error updating courier data:', error);
+        });
+    } else {
+      const clientId = userInfo.Client?.client_id;
+      if (!clientId) return;
+
+      const cleanedData = {
+        country: updatedData.country,
+        city: updatedData.city,
+        streetName: updatedData.street_name,
+        buildingNumber: Number(updatedData.building_number),
+        apartmentNumber: updatedData.apartment_number
+          ? Number(updatedData.apartment_number)
+          : null,
+      };
+
+
+      axios.put(`http://localhost:3000/client/${clientId}/address`, cleanedData)
+        .then(response => {
+          setUserInfo(prev => ({
+            ...prev,
+            Client: {
+              ...prev.Client,
+              address: response.data,
+            },
+          }));
+          setIsModalOpen(false);
+        })
+        .catch(error => {
+          console.error('Error updating client address:', error);
+        });
+    }
   };
 
   const handleEditClick = () => {
     if (isCourier) {
+      const vehicle = userInfo.Courier?.vehicle || {};
       setModalContent(
         <VehicleForm
-          vehicle={userInfo.vehicle}
+          vehicle={vehicle}
           onUpdate={handleUserUpdate}
         />
       );
     } else {
+      const address = userInfo.Client?.address || {};
       setModalContent(
         <AddressForm
-          address={userInfo.address}
+          address={address}
           onUpdate={handleUserUpdate}
         />
       );
     }
     setIsModalOpen(true);
   };
-
   const displayValue = (value) => value || 'Not provided';
 
   const formatDate = (dateString) => {
@@ -84,27 +144,54 @@ const UserPage = () => {
     return format(date, 'MMMM dd, yyyy HH:mm:ss');
   };
 
+  const formatAddress = (address) => {
+    if (!address) return 'No address';
+    const { street_name, building_number, apartment_number, city } = address;
+
+    const base = `${street_name} ${building_number}`;
+    const apartment = apartment_number ? `, Apt. ${apartment_number}` : '';
+
+    return `${base}${apartment}, ${city}`;
+  };
+
+  const formatStatus = (status) => {
+    if (!status) return '';
+    return status
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(' ');
+  };
+
+
   if (!userInfo) return <div>Loading...</div>;
   console.log(userInfo)
+  console.log(deliveries)
 
   const formattedDeliveries = deliveries.map(delivery => ({
     ...delivery,
     created_at: formatDate(delivery.created_at),
     updated_at: formatDate(delivery.updated_at),
-    address: `Address ${delivery.address_id}`, // витягувати норм адресу тут
+    address: formatAddress(delivery.Address),
+    warehouse: <>
+      <b>{delivery.warehouse.name}</b><br />
+      {formatAddress(delivery.warehouse.address)}
+    </>,
+    delivery_status: formatStatus(delivery.delivery_status),
+    order: delivery.order.order_type,
   }));
 
   const deliveryColumns = [
     { header: 'ID', accessor: 'delivery_id' },
+    { header: 'Warehouse', accessor: 'warehouse' },
     { header: 'Address', accessor: 'address' },
+    { header: 'Order Type', accessor: 'order' },
     { header: 'Status', accessor: 'delivery_status' },
     { header: 'Delivery Type', accessor: 'delivery_type' },
-    { header: 'Created At', accessor: 'created_at' },
-    { header: 'Updated At', accessor: 'updated_at' },
     { header: 'Cost', accessor: 'delivery_cost' },
     { header: 'Payment Method', accessor: 'payment_method' },
+    { header: 'Created At', accessor: 'created_at' },
+    { header: 'Updated At', accessor: 'updated_at' },
   ];
-
 
   return (
     <div>
@@ -139,12 +226,12 @@ const UserPage = () => {
         )}
         <button onClick={handleEditClick}>Edit</button>
 
-        {isCourier && (
-          <div>
-            <h2>Your Deliveries</h2>
-            <Table data={formattedDeliveries} columns={deliveryColumns} />
-          </div>
-        )}
+
+        <div>
+          <h2>Your Deliveries</h2>
+          <Table data={formattedDeliveries} columns={deliveryColumns} />
+        </div>
+
 
       </div>
 

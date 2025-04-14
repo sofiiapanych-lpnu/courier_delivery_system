@@ -2,12 +2,15 @@ import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, ParseI
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ClientService } from './client.service';
 import { CreateClientDto, UpdateClientDto } from './dto';
+import { DeliveryService } from 'src/modules/delivery/delivery.service';
+import { UpdateAddressDto } from 'src/modules/address/dto/update-address.dto';
 
 @Controller('client')
 export class ClientController {
   constructor(
     private readonly clientService: ClientService,
     private readonly prisma: PrismaService,
+    private readonly deliveryService: DeliveryService,
   ) { }
 
   @Post()
@@ -79,4 +82,25 @@ export class ClientController {
       );
     }
   }
+
+  @Get(':clientId/deliveries')
+  getDeliveryByClientId(@Param('clientId') id: string) {
+    return this.deliveryService.getDeliveryByClientId(+id);
+  }
+
+  @Put(':id/address')
+  async updateClientAddress(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() dto: UpdateAddressDto,
+  ) {
+    try {
+      return await this.clientService.updateClientAddress(id, dto);
+    } catch (error) {
+      throw new HttpException(
+        `Failed to update address: ${error.message}`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
 }

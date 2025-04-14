@@ -84,6 +84,10 @@ export class CourierService {
     return this.prisma.courier.update({
       where: { courier_id: courierId },
       data: { license_plate: licensePlateToAssign },
+      include: {
+        user: true,
+        vehicle: true,
+      },
     });
   }
 
@@ -129,15 +133,21 @@ export class CourierService {
 
     if (existingVehicle) {
       if (existingVehicle.is_company_owner) {
+        if (licensePlate) {
+          await this.vehicleService.updateVehicle(licensePlate, vehicleDto);
+        }
         return existingVehicle.license_plate;
       }
 
       if (courier.license_plate !== existingVehicle.license_plate) {
         throw new Error('This vehicle already exists and is not owned by a company.');
       }
-
+      if (licensePlate) {
+        await this.vehicleService.updateVehicle(licensePlate, vehicleDto);
+      }
       return existingVehicle.license_plate;
     }
+    console.log('Validating new vehicle fields:', vehicleDto);
 
     this.validateVehicleFields(vehicleDto);
 

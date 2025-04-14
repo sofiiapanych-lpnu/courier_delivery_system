@@ -1,24 +1,25 @@
 import React, { useState } from "react";
 
 const VehicleForm = ({ vehicle = {}, onUpdate }) => {
-  const [licensePlate, setLicensePlate] = useState(vehicle.license_plate || "");
-  const [model, setModel] = useState(vehicle.model || "");
-  const [transportType, setTransportType] = useState(vehicle.transport_type || "");
-  const [ownedByCompany, setOwnedByCompany] = useState(vehicle.owned_by_company || false);
+  const [formData, setFormData] = useState({
+    license_plate: vehicle.license_plate || '',
+    model: vehicle.model || '',
+    transport_type: vehicle.transport_type || '',
+    owned_by_company: vehicle.owned_by_company || '',
+  });
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    const newValue = type === 'checkbox' ? checked : value;
+
+    setFormData(prev => ({ ...prev, [name]: newValue }));
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    onUpdate(formData);
+    console.log(formData)
 
-    const updatedData = {
-      vehicle: {
-        license_plate: licensePlate,
-        model: model,
-        transport_type: transportType,
-        owned_by_company: ownedByCompany
-      }
-    };
-
-    onUpdate(updatedData);
   };
 
   return (
@@ -29,32 +30,36 @@ const VehicleForm = ({ vehicle = {}, onUpdate }) => {
           <label>License Plate</label>
           <input
             type="text"
-            value={licensePlate}
-            onChange={(e) => setLicensePlate(e.target.value)}
+            name="license_plate"
+            value={formData.license_plate}
+            onChange={handleChange}
           />
         </div>
         <div>
           <label>Model</label>
           <input
             type="text"
-            value={model}
-            onChange={(e) => setModel(e.target.value)}
+            name="model"
+            value={formData.model}
+            onChange={handleChange}
           />
         </div>
         <div>
           <label>Transport Type</label>
           <input
             type="text"
-            value={transportType}
-            onChange={(e) => setTransportType(e.target.value)}
+            name="transport_type"
+            value={formData.transport_type}
+            onChange={handleChange}
           />
         </div>
         <div>
           <label>
             <input
               type="checkbox"
-              checked={ownedByCompany}
-              onChange={(e) => setOwnedByCompany(e.target.checked)}
+              name="owned_by_company"
+              checked={formData.owned_by_company}
+              onChange={handleChange}
             />
             Owned by company
           </label>

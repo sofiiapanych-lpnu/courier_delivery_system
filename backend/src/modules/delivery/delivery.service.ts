@@ -69,6 +69,11 @@ export class DeliveryService {
       orderBy: {
         start_time: 'desc',
       },
+      include: {
+        warehouse: true,
+        Address: true,
+        order: true,
+      }
     });
   }
 
@@ -129,10 +134,40 @@ export class DeliveryService {
   async getDeliveryByCourierId(id: number) {
     const deliveries = await this.prisma.delivery.findMany({
       where: { courier_id: id },
+      include: {
+        warehouse: {
+          include: {
+            address: true,
+          },
+        },
+        Address: true,
+        order: true,
+      },
+    });
+
+    if (!deliveries) {
+      throw new NotFoundException(`No deliveries found for courier with ID ${id}`);
+    }
+
+    return deliveries;
+  }
+
+  async getDeliveryByClientId(id: number) {
+    const deliveries = await this.prisma.delivery.findMany({
+      where: { client_id: id },
+      include: {
+        warehouse: {
+          include: {
+            address: true,
+          },
+        },
+        Address: true,
+        order: true,
+      },
     });
 
     if (!deliveries || deliveries.length === 0) {
-      throw new NotFoundException(`No deliveries found for courier with ID ${id}`);
+      throw new NotFoundException(`No deliveries found for client with ID ${id}`);
     }
 
     return deliveries;

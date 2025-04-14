@@ -1,7 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
 import { CreateClientDto, UpdateClientDto } from "./dto";
-import { Client, Prisma } from "@prisma/client";
+import { Address, Client, Prisma } from "@prisma/client";
+import { UpdateAddressDto } from "src/modules/address/dto/update-address.dto";
 
 @Injectable()
 export class ClientService {
@@ -41,7 +42,7 @@ export class ClientService {
       skip,
       take: limit,
       include: {
-        user: true, // Щоб повернути також інформацію з User
+        user: true,
       },
     });
   }
@@ -90,4 +91,55 @@ export class ClientService {
 
     return { message: `Client with ID ${id} deleted successfully` };
   }
+
+  async updateClientAddress(clientId: number, dto: UpdateAddressDto): Promise<Address> {
+    const client = await this.prisma.client.findUnique({
+      where: { client_id: clientId },
+    });
+
+    if (!client) {
+      throw new Error(`Client not found`);
+    }
+
+    const existingAddress = await this.prisma.address.findFirst({
+      where: {
+        country: dto.country,
+        city: dto.city,
+        street_name: dto.streetName,
+        building_number: dto.buildingNumber,
+        apartment_number: dto.apartmentNumber || null,
+      },
+    });
+
+    let address;
+
+    if (existingAddress) {
+      address = existingAddress;
+    } else {
+      if (!dto.streetName || !dto.buildingNumber || !dto.country || !dto.city) {
+        throw new Error("Missing required address fields");
+      }
+      const addressData = {
+        country: dto.country,
+        city: dto.city,
+        street_name: dto.streetName,
+        building_number: dto.buildingNumber,
+        apartment_number: dto.apartmentNumber || null,
+      };
+
+      address = await this.prisma.address.create({
+        data: addressData,
+      });
+    }
+
+    await this.prisma.client.update({
+      where: { client_id: clientId },
+      data: { address_id: address.address_id },
+    });
+
+    return address;
+  }
+
+
+
 }
