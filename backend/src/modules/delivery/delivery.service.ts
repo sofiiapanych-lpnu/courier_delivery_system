@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateDeliveryDto } from './dto/create-delivery.dto';
 import { UpdateDeliveryDto } from './dto/update-delivery.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class DeliveryService {
@@ -39,47 +40,184 @@ export class DeliveryService {
     endTime?: Date;
     desiredDuration?: number;
     warehouseId?: number;
+    warehouseAddressQuery?: string;
+    clientAddressQuery?: string;
+    orderTypeQuery?: string;
+    clientNameQuery?: string;
+    courierNameQuery?: string;
+    minCost?: number;
+    maxCost?: number;
+    paymentMethods?: string[];
     page?: number;
     limit?: number;
   }) {
-    const { orderId, courierId, clientId, addressId, deliveryType,
+    const {
+      orderId, courierId, clientId, addressId, deliveryType,
       deliveryCost, paymentMethod, deliveryStatus, startTime, endTime,
-      desiredDuration, warehouseId, page = 1, limit = 10, } = query;
+      desiredDuration, warehouseId, warehouseAddressQuery, clientAddressQuery, orderTypeQuery, clientNameQuery, courierNameQuery, minCost, maxCost, paymentMethods, page = 1, limit = 10
+    } = query;
+
     const skip = (page - 1) * limit;
 
-    return this.prisma.delivery.findMany({
-      where: {
-        AND: [
-          orderId !== undefined ? { order_id: orderId } : {},
-          courierId !== undefined ? { courier_id: courierId } : {},
-          clientId !== undefined ? { client_id: clientId } : {},
-          addressId !== undefined ? { address_id: addressId } : {},
-          deliveryType ? { delivery_type: { contains: deliveryType, mode: 'insensitive' } } : {},
-          deliveryCost !== undefined ? { delivery_cost: deliveryCost } : {},
-          paymentMethod ? { payment_method: { contains: paymentMethod, mode: 'insensitive' } } : {},
-          deliveryStatus ? { delivery_status: { contains: deliveryStatus, mode: 'insensitive' } } : {},
-          desiredDuration !== undefined ? { desired_duration: desiredDuration } : {},
-          warehouseId !== undefined ? { warehouse_id: warehouseId } : {},
-          startTime ? { start_time: { gte: startTime } } : {},
-          endTime ? { end_time: { lte: endTime } } : {},
-        ]
-      },
-      skip,
-      take: limit,
-      orderBy: {
-        start_time: 'desc',
-      },
-      include: {
-        warehouse: true,
-        Address: true,
-        order: true,
+    const whereClause: Prisma.DeliveryWhereInput = {
+      AND: [
+        orderId !== undefined ? { order_id: orderId } : {},
+        courierId !== undefined ? { courier_id: courierId } : {},
+        clientId !== undefined ? { client_id: clientId } : {},
+        addressId !== undefined ? { address_id: addressId } : {},
+        deliveryType ? {
+          delivery_type: {
+            contains: deliveryType,
+            mode: Prisma.QueryMode.insensitive
+          }
+        } : {},
+        deliveryCost !== undefined ? { delivery_cost: deliveryCost } : {},
+        paymentMethod ? {
+          payment_method: {
+            contains: paymentMethod,
+            mode: Prisma.QueryMode.insensitive
+          }
+        } : {},
+        deliveryStatus ? {
+          delivery_status: {
+            contains: deliveryStatus,
+            mode: Prisma.QueryMode.insensitive
+          }
+        } : {},
+        desiredDuration !== undefined ? { desired_duration: desiredDuration } : {},
+        warehouseId !== undefined ? { warehouse_id: warehouseId } : {},
+        startTime ? { start_time: { gte: startTime } } : {},
+        endTime ? { end_time: { lte: endTime } } : {},
+        warehouseAddressQuery ? {
+          warehouse: {
+            address: {
+              OR: [
+                { street_name: { contains: warehouseAddressQuery, mode: 'insensitive' } },
+                { city: { contains: warehouseAddressQuery, mode: 'insensitive' } }
+              ]
+            }
+          }
+        } : {},
+
+        clientAddressQuery ? {
+          Address: {
+            OR: [
+              { street_name: { contains: clientAddressQuery, mode: 'insensitive' } },
+              { city: { contains: clientAddressQuery, mode: 'insensitive' } }
+            ]
+          }
+        } : {},
+
+        orderTypeQuery ? {
+          order: {
+            order_type: {
+              contains: orderTypeQuery,
+              mode: 'insensitive'
+            }
+          }
+        } : {},
+        clientNameQuery ? {
+          Client: {
+            user: {
+              OR: [
+                { first_name: { contains: clientNameQuery, mode: 'insensitive' } },
+                { last_name: { contains: clientNameQuery, mode: 'insensitive' } },
+              ]
+            }
+          }
+        } : {},
+        courierNameQuery ? {
+          courier: {
+            user: {
+              OR: [
+                { first_name: { contains: courierNameQuery, mode: 'insensitive' } },
+                { last_name: { contains: courierNameQuery, mode: 'insensitive' } },
+              ]
+            }
+          }
+        } : {},
+        (minCost !== undefined || maxCost !== undefined) ? {
+          delivery_cost: {
+            ...(minCost !== undefined ? { gte: minCost } : {}),
+            ...(maxCost !== undefined ? { lte: maxCost } : {}),
+          }
+        } : {},
+        paymentMethods && paymentMethods.length > 0 ? {
+          payment_method: {
+            in: paymentMethods
+          }
+        } : {},
+      ]
+    };
+
+    const [deliveries, total] = await Promise.all([
+      this.prisma.delivery.findMany({
+        where: whereClause,
+        skip,
+        take: limit,
+        orderBy: {
+          start_time: 'desc',
+        },
+        include: {
+          warehouse: {
+            include: {
+              address: true,
+            }
+          },
+          Address: true,
+          order: true,
+          Client: {
+            include: {
+              user: true,
+            }
+          },
+          courier: {
+            include: {
+              user: true,
+            }
+          },
+        }
+      }),
+      this.prisma.delivery.count({
+        where: whereClause
+      })
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      items: deliveries,
+      meta: {
+        totalItems: total,
+        totalPages,
+        currentPage: page,
       }
-    });
+    };
   }
+
 
   async getDeliveryById(id: number) {
     const delivery = await this.prisma.delivery.findUnique({
       where: { delivery_id: id },
+      include: {
+        warehouse: {
+          include: {
+            address: true,
+          }
+        },
+        Address: true,
+        order: true,
+        Client: {
+          include: {
+            user: true,
+          }
+        },
+        courier: {
+          include: {
+            user: true,
+          }
+        },
+      }
     });
     if (!delivery) {
       throw new NotFoundException(`Delivery with ID ${id} not found`);
@@ -112,6 +250,25 @@ export class DeliveryService {
         desired_duration: dto.desiredDuration,
         warehouse_id: dto.warehouseId,
       },
+      include: {
+        warehouse: {
+          include: {
+            address: true,
+          }
+        },
+        Address: true,
+        order: true,
+        Client: {
+          include: {
+            user: true,
+          }
+        },
+        courier: {
+          include: {
+            user: true,
+          }
+        },
+      }
     });
   }
 

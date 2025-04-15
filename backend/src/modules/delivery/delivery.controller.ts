@@ -27,6 +27,9 @@ export class DeliveryController {
     @Query('endTime') endTime?: string,
     @Query('desiredDuration') desiredDuration?: string,
     @Query('warehouseId') warehouseId?: string,
+    @Query('warehouseAddressQuery') warehouseAddressQuery?: string,
+    @Query('clientAddressQuery') clientAddressQuery?: string,
+    @Query('orderTypeQuery') orderTypeQuery?: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
@@ -43,6 +46,9 @@ export class DeliveryController {
       endTime: endTime ? new Date(endTime) : undefined,
       desiredDuration: desiredDuration ? parseFloat(desiredDuration) : undefined,
       warehouseId: warehouseId ? parseInt(warehouseId, 10) : undefined,
+      warehouseAddressQuery,
+      clientAddressQuery,
+      orderTypeQuery,
       page: page ? parseInt(page, 10) : undefined,
       limit: limit ? parseInt(limit, 10) : undefined,
     };

@@ -1,5 +1,3 @@
-import React from 'react';
-
 const Table = ({ data, columns }) => {
   return (
     <div className="table-container">
@@ -16,7 +14,11 @@ const Table = ({ data, columns }) => {
             data.map((row, rowIndex) => (
               <tr key={rowIndex}>
                 {columns.map((column, colIndex) => (
-                  <td key={colIndex}>{row[column.accessor]}</td>
+                  <td key={colIndex}>
+                    {column.cell
+                      ? column.cell({ row })
+                      : row[column.accessor]}
+                  </td>
                 ))}
               </tr>
             ))

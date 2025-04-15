@@ -36,6 +36,9 @@ export class WarehouseService {
       },
       skip,
       take: limit,
+      include: {
+        address: true,
+      }
     });
   }
 
