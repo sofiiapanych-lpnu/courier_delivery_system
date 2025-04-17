@@ -185,6 +185,7 @@ const AdminPage = () => {
     { header: 'Order Type', accessor: 'order' },
     { header: 'Start Time', accessor: 'start_time' },
     { header: 'End Time', accessor: 'end_time' },
+    { header: 'Desired Duration', accessor: 'desired_duration' },
     { header: 'Status', accessor: 'delivery_status' },
     { header: 'Delivery Type', accessor: 'delivery_type' },
     { header: 'Cost', accessor: 'delivery_cost' },
@@ -496,7 +497,49 @@ const AdminPage = () => {
                   })}
                 />
               </div>
+              <div className='delivery'>
+                <input type="text" value={selectedDelivery?.delivery_type || ''} onChange={(e) => setSelectedDelivery({ ...selectedDelivery, delivery_type: e.target.value })} />
+                <input type="text" value={selectedDelivery?.delivery_status || ''} onChange={(e) => setSelectedDelivery({ ...selectedDelivery, delivery_status: e.target.value })} />
+                <input type="text" value={selectedDelivery?.delivery_cost || ''} onChange={(e) => setSelectedDelivery({ ...selectedDelivery, delivery_cost: e.target.value })} />
+                <input type="text" value={selectedDelivery?.desired_duration || ''} onChange={(e) => setSelectedDelivery({ ...selectedDelivery, desired_duration: e.target.value })} />
+              </div>
+              <div className='client'>
+                <input type="text" value={selectedDelivery?.Client?.user?.first_name || ''} onChange={(e) => setSelectedDelivery({
+                  ...selectedDelivery,
+                  client: {
+                    ...selectedDelivery?.client,
+                    user: {
+                      ...selectedDelivery?.client?.user,
+                      first_name: e.target.value
+                    }
+                  }
+                })} />
+                <input type="text" value={selectedDelivery?.Client?.user?.last_name || ''} onChange={(e) => setSelectedDelivery({ ...selectedDelivery, client: { ...selectedDelivery?.client, user: { ...selectedDelivery?.client?.user, last_name: e.target.value } } })} />
+                <input type="text" value={selectedDelivery?.Client?.user?.email || ''} onChange={(e) => setSelectedDelivery({ ...selectedDelivery, client: { ...selectedDelivery?.client, user: { ...selectedDelivery?.client?.user, email: e.target.value } } })} />
+                <input type="text" value={selectedDelivery?.Client?.user?.phone_number || ''} onChange={(e) => setSelectedDelivery({ ...selectedDelivery, client: { ...selectedDelivery?.client, user: { ...selectedDelivery?.client?.user, phone_number: e.target.value } } })} />
+              </div>
 
+              <div className='courier'>
+                <input type="text" value={selectedDelivery?.courier?.license_plate || ''} onChange={(e) => setSelectedDelivery({ ...selectedDelivery, courier: { ...selectedDelivery?.courier, license_plate: e.target.value } })} />
+                <input type="text" value={selectedDelivery?.courier?.user?.first_name || ''} onChange={(e) => setSelectedDelivery({
+                  ...selectedDelivery,
+                  courier: {
+                    ...selectedDelivery?.courier,
+                    user: {
+                      ...selectedDelivery?.courier?.user,
+                      first_name: e.target.value
+                    }
+                  }
+                })} />
+                <input type="text" value={selectedDelivery?.courier?.user?.last_name || ''} onChange={(e) => setSelectedDelivery({ ...selectedDelivery, courier: { ...selectedDelivery?.courier, user: { ...selectedDelivery?.courier?.user, last_name: e.target.value } } })} />
+                <input type="text" value={selectedDelivery?.courier?.user?.email || ''} onChange={(e) => setSelectedDelivery({ ...selectedDelivery, courier: { ...selectedDelivery?.courier, user: { ...selectedDelivery?.courier?.user, email: e.target.value } } })} />
+                <input type="text" value={selectedDelivery?.courier?.user?.phone_number || ''} onChange={(e) => setSelectedDelivery({ ...selectedDelivery, courier: { ...selectedDelivery?.courier, user: { ...selectedDelivery?.courier?.user, phone_number: e.target.value } } })} />
+              </div>
+              <div className='warehouse'>
+                <input type="text" value={selectedDelivery?.warehouse?.name || ''} onChange={(e) => setSelectedDelivery({ ...selectedDelivery, warehouse: { ...selectedDelivery?.warehouse, name: e.target.value } })} />
+                <input type="text" value={selectedDelivery?.warehouse?.contact_number || ''} onChange={(e) => setSelectedDelivery({ ...selectedDelivery, warehouse: { ...selectedDelivery?.warehouse, contact_number: e.target.value } })} />
+                <input type="text" value={selectedDelivery?.warehouse?.address?.street_name || ''} onChange={(e) => setSelectedDelivery({ ...selectedDelivery, warehouse: { ...selectedDelivery?.warehouse, address: { ...selectedDelivery?.warehouse?.address, street_name: e.target.value } } })} />
+              </div>
 
               <input
                 type="text"
