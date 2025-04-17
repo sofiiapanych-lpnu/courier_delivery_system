@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Order } from '@prisma/client';
+import { Order, Prisma } from '@prisma/client';
 
 @Injectable()
 export class OrderService {
@@ -26,34 +26,126 @@ export class OrderService {
   async getAllOrder(query: {
     orderType?: string;
     description?: string;
-    cost?: number;
+    minCost?: number;
+    maxCost?: number;
+    minWeight?: number;
+    maxWeight?: number;
+    minLength?: number;
+    maxLength?: number;
+    minWidth?: number;
+    maxWidth?: number;
+    minHeight?: number;
+    maxHeight?: number;
     paymentMethod?: string;
-    weight?: number;
-    length?: number;
-    width?: number;
-    height?: number;
     page?: number;
     limit?: number;
-  }): Promise<Order[]> {
-    const { orderType, description, cost, paymentMethod, weight, length, width, height, page = 1, limit = 10 } = query;
+  }): Promise<{
+    items: Order[];
+    meta: {
+      totalItems: number;
+      totalPages: number;
+      currentPage: number;
+    };
+  }> {
+    const {
+      orderType,
+      description,
+      minCost,
+      maxCost,
+      minWeight,
+      maxWeight,
+      minLength,
+      maxLength,
+      minWidth,
+      maxWidth,
+      minHeight,
+      maxHeight,
+      paymentMethod,
+      page = 1,
+      limit = 10,
+    } = query;
+
     const skip = (page - 1) * limit;
-    return await this.prisma.order.findMany({
-      where: {
-        AND: [
-          orderType ? { order_type: { contains: orderType, mode: 'insensitive' } } : {},
-          description ? { description: { contains: description, mode: 'insensitive' } } : {},
-          cost !== undefined ? { cost: cost } : {},
-          paymentMethod ? { paymentMethod: { contains: paymentMethod, mode: 'insensitive' } } : {},
-          weight !== undefined ? { weight: weight } : {},
-          length !== undefined ? { length: length } : {},
-          width !== undefined ? { width: width } : {},
-          height !== undefined ? { height: height } : {},
-        ]
+
+    const whereClause: Prisma.OrderWhereInput = {
+      AND: [
+        orderType ? { order_type: { contains: orderType, mode: 'insensitive' } } : {},
+        description ? { description: { contains: description, mode: 'insensitive' } } : {},
+        paymentMethod ? { payment_method: { contains: paymentMethod, mode: 'insensitive' } } : {},
+
+        (minCost !== undefined || maxCost !== undefined)
+          ? {
+            cost: {
+              ...(minCost !== undefined ? { gte: minCost } : {}),
+              ...(maxCost !== undefined ? { lte: maxCost } : {}),
+            }
+          }
+          : {},
+
+        (minWeight !== undefined || maxWeight !== undefined)
+          ? {
+            weight: {
+              ...(minWeight !== undefined ? { gte: minWeight } : {}),
+              ...(maxWeight !== undefined ? { lte: maxWeight } : {}),
+            }
+          }
+          : {},
+
+        (minLength !== undefined || maxLength !== undefined)
+          ? {
+            length: {
+              ...(minLength !== undefined ? { gte: minLength } : {}),
+              ...(maxLength !== undefined ? { lte: maxLength } : {}),
+            }
+          }
+          : {},
+
+        (minWidth !== undefined || maxWidth !== undefined)
+          ? {
+            width: {
+              ...(minWidth !== undefined ? { gte: minWidth } : {}),
+              ...(maxWidth !== undefined ? { lte: maxWidth } : {}),
+            }
+          }
+          : {},
+
+        (minHeight !== undefined || maxHeight !== undefined)
+          ? {
+            height: {
+              ...(minHeight !== undefined ? { gte: minHeight } : {}),
+              ...(maxHeight !== undefined ? { lte: maxHeight } : {}),
+            }
+          }
+          : {},
+      ]
+    };
+
+    const [orders, total] = await Promise.all([
+      this.prisma.order.findMany({
+        where: whereClause,
+        skip,
+        take: limit,
+        orderBy: {
+          created_at: 'desc',
+        },
+      }),
+      this.prisma.order.count({
+        where: whereClause,
+      }),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      items: orders,
+      meta: {
+        totalItems: total,
+        totalPages,
+        currentPage: page,
       },
-      skip,
-      take: limit,
-    });
+    };
   }
+
 
   async getOrderById(id: number): Promise<Order> {
     const order = await this.prisma.order.findUnique({ where: { order_id: id } });

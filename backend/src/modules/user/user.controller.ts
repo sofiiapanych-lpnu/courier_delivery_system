@@ -19,20 +19,33 @@ export class UserController {
     @Query('firstName') firstName?: string,
     @Query('lastName') lastName?: string,
     @Query('role') role?: string,
+    @Query('addressQuery') addressQuery?: string,
+    @Query('vehicleQuery') vehicleQuery?: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
-  ): Promise<User[]> {
+  ): Promise<{
+    items: User[];
+    meta: {
+      totalItems: number;
+      totalPages: number;
+      currentPage: number;
+    };
+  }> {
     const query = {
       email,
       phoneNumber,
       firstName,
       lastName,
       role,
-      page: page ? parseInt(page, 10) : undefined,
-      limit: limit ? parseInt(limit, 10) : undefined,
-    }
+      addressQuery,
+      vehicleQuery,
+      page: page ? parseInt(page, 10) : 1,
+      limit: limit ? parseInt(limit, 10) : 10,
+    };
+
     return this.userService.getAllUsers(query);
   }
+
 
   @Get(':userId')
   async getUserById(@Param('userId') userId: number): Promise<User> {

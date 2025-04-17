@@ -2,8 +2,11 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "../pages/Home.jsx";
 import Auth from "../pages/Auth.jsx";
 import ProtectedRoute from "./ProtectedRoute";
-import UserPage from "../pages/UserPage.jsx";
+import UserProfilePage from "../pages/UserProfilePage.jsx";
 import AdminPage from "../pages/AdminPage.jsx";
+import DeliveriesPage from "../pages/DeliveriesPage.jsx";
+import UserPage from "../pages/UserPage.jsx"
+import OrdersPage from "../pages/OrdersPage.jsx";
 
 const AppRoutes = () => {
   return (
@@ -11,8 +14,12 @@ const AppRoutes = () => {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Auth />} />
-        <Route path="/user" element={<UserPage />}></Route>
-        <Route path="/admin" element={<AdminPage />}></Route >
+        <Route path="/user" element={<UserProfilePage />}></Route>
+        <Route path="/admin" element={<AdminPage />}>
+          <Route path="deliveries" element={<DeliveriesPage />} />
+          <Route path="users" element={<UserPage />} />
+          <Route path="orders" element={<OrdersPage />} />
+        </Route>
 
         {/* Захищений маршрут, доступний тільки для авторизованих користувачів */}
         {/* <Route

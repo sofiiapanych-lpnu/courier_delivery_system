@@ -16,29 +16,41 @@ export class OrderController {
   getAllOrder(
     @Query('orderType') orderType?: string,
     @Query('description') description?: string,
-    @Query('cost') cost?: string,
+    @Query('minCost') minCost?: string,
+    @Query('maxCost') maxCost?: string,
+    @Query('minWeight') minWeight?: string,
+    @Query('maxWeight') maxWeight?: string,
+    @Query('minLength') minLength?: string,
+    @Query('maxLength') maxLength?: string,
+    @Query('minWidth') minWidth?: string,
+    @Query('maxWidth') maxWidth?: string,
+    @Query('minHeight') minHeight?: string,
+    @Query('maxHeight') maxHeight?: string,
     @Query('paymentMethod') paymentMethod?: string,
-    @Query('weight') weight?: string,
-    @Query('length') length?: string,
-    @Query('width') width?: string,
-    @Query('height') height?: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
     const query = {
       orderType,
       description,
-      cost: cost ? parseInt(cost, 10) : undefined,
       paymentMethod,
-      weight: weight ? parseInt(weight, 10) : undefined,
-      length: length ? parseInt(length, 10) : undefined,
-      width: width ? parseInt(width, 10) : undefined,
-      height: height ? parseInt(height, 10) : undefined,
+      minCost: minCost ? parseFloat(minCost) : undefined,
+      maxCost: maxCost ? parseFloat(maxCost) : undefined,
+      minWeight: minWeight ? parseFloat(minWeight) : undefined,
+      maxWeight: maxWeight ? parseFloat(maxWeight) : undefined,
+      minLength: minLength ? parseFloat(minLength) : undefined,
+      maxLength: maxLength ? parseFloat(maxLength) : undefined,
+      minWidth: minWidth ? parseFloat(minWidth) : undefined,
+      maxWidth: maxWidth ? parseFloat(maxWidth) : undefined,
+      minHeight: minHeight ? parseFloat(minHeight) : undefined,
+      maxHeight: maxHeight ? parseFloat(maxHeight) : undefined,
       page: page ? parseInt(page, 10) : undefined,
       limit: limit ? parseInt(limit, 10) : undefined,
     };
+
     return this.orderService.getAllOrder(query);
   }
+
 
   @Get(':id')
   getOrderById(@Param('id') id: string) {

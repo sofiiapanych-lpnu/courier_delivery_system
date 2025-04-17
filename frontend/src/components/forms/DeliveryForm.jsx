@@ -8,11 +8,9 @@ const DeliveryForm = ({ selectedDelivery, setSelectedDelivery }) => {
     const updatedDelivery = { ...selectedDelivery };
     let current = updatedDelivery;
 
-    // Проходимо по ключах шляху і оновлюємо значення
     keys.forEach((key, index) => {
       if (index === keys.length - 1) {
         current[key] = value;
-        console.log('current[key] = value', current[key], key)
       } else {
         if (!current[key]) {
           current[key] = {};
@@ -40,7 +38,7 @@ const DeliveryForm = ({ selectedDelivery, setSelectedDelivery }) => {
       <label>{label}</label>
       <input
         type="datetime-local"
-        value={value ? value.slice(0, 16) : ''} // скорочує до "yyyy-MM-ddTHH:mm"
+        value={value ? value.slice(0, 16) : ''}
         onChange={(e) => handleChange(path, e.target.value)}
       />
     </div>

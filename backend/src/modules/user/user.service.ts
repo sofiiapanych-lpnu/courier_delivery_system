@@ -1,6 +1,6 @@
 import { PrismaService } from "src/prisma/prisma.service";
 import { CreateUserDto, UpdateUserDto } from "./dto";
-import { User } from "@prisma/client";
+import { Prisma, User } from "@prisma/client";
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { ClientService } from "./client/client.service";
 import { CourierService } from "./courier/courier.service";
@@ -59,28 +59,97 @@ export class UserService {
   async getAllUsers(query: {
     email?: string;
     phoneNumber?: string;
-    firstName?: string
+    firstName?: string;
     lastName?: string;
     role?: string;
+    addressQuery?: string;
+    vehicleQuery?: string;
     page?: number;
     limit?: number;
-  }): Promise<User[]> {
-    const { email, phoneNumber, firstName, lastName, role, page = 1, limit = 10 } = query;
+  }): Promise<{
+    items: User[];
+    meta: {
+      totalItems: number;
+      totalPages: number;
+      currentPage: number;
+    };
+  }> {
+    const { email, phoneNumber, firstName, lastName, role, addressQuery, vehicleQuery, page = 1, limit = 10 } = query;
     const skip = (page - 1) * limit;
-    return this.prisma.user.findMany({
-      where: {
-        AND: [
-          email ? { email: { contains: email, mode: 'insensitive' } } : {},
-          phoneNumber ? { phone_number: { contains: phoneNumber, mode: 'insensitive' } } : {},
-          firstName ? { first_name: { contains: firstName, mode: 'insensitive' } } : {},
-          lastName ? { last_name: { contains: lastName, mode: 'insensitive' } } : {},
-          role ? { role: { contains: role, mode: 'insensitive' } } : {},
-        ]
+
+    const whereClause: Prisma.UserWhereInput = {
+      AND: [
+        email ? { email: { contains: email, mode: 'insensitive' } } : {},
+        phoneNumber ? { phone_number: { contains: phoneNumber, mode: 'insensitive' } } : {},
+        firstName ? { first_name: { contains: firstName, mode: 'insensitive' } } : {},
+        lastName ? { last_name: { contains: lastName, mode: 'insensitive' } } : {},
+        role ? { role: { contains: role, mode: 'insensitive' } } : {},
+        addressQuery ? {
+          Client: {
+            address: {
+              OR: [
+                !isNaN(Number(addressQuery)) ? { building_number: Number(addressQuery) } : {},
+                !isNaN(Number(addressQuery)) ? { apartment_number: Number(addressQuery) } : {},
+                { street_name: { contains: addressQuery, mode: 'insensitive' } },
+                { city: { contains: addressQuery, mode: 'insensitive' } },
+                { country: { contains: addressQuery, mode: 'insensitive' } },
+              ]
+            }
+          }
+        } : {},
+        vehicleQuery ? {
+          Courier: {
+            vehicle: {
+              OR: [
+                { license_plate: { contains: vehicleQuery, mode: 'insensitive' } },
+                { model: { contains: vehicleQuery, mode: 'insensitive' } },
+                { transport_type: { contains: vehicleQuery, mode: 'insensitive' } }
+              ]
+            }
+          }
+        } : {},
+      ]
+    };
+
+    const [users, total] = await Promise.all([
+      this.prisma.user.findMany({
+        where: whereClause,
+        skip,
+        take: limit,
+        orderBy: {
+          created_at: 'desc',
+        },
+        include: {
+          Client: {
+            include: {
+              address: true,
+            }
+          },
+          Courier: {
+            include: {
+              vehicle: true,
+            }
+          },
+        }
+      }),
+      this.prisma.user.count({
+        where: whereClause,
+      }),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      items: users,
+      meta: {
+        totalItems: total,
+        totalPages,
+        currentPage: page,
       },
-      skip,
-      take: limit,
-    });
+    };
   }
+
+
 
   async getUserById(userId: number): Promise<User> {
     const user = await this.prisma.user.findUnique({

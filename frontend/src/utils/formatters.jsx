@@ -22,11 +22,32 @@ export const formatStatus = (status) => {
     .join(' ');
 };
 
+export const formatPaymentMethod = (paymentMethod) => {
+  if (!paymentMethod) return '';
+  return paymentMethod
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+};
+
 export const formatPerson = (person) => {
   if (!person || !person.user) return 'No name';
   const { first_name, last_name } = person.user;
   return `${first_name} ${last_name}`;
 };
+
+export const formatUserFullName = (user) => {
+  if (!user || !user.first_name || !user.last_name) return 'No name';
+  const { first_name, last_name } = user;
+  return `${first_name} ${last_name}`;
+};
+
+export const formatVehicle = (vehicle) => {
+  if (!vehicle) return '';
+  const { license_plate, model, transport_type } = vehicle;
+  return `${license_plate} - ${model} (${transport_type})`;
+};
+
 
 export const formatDelivery = (delivery) => ({
   ...delivery,
@@ -42,7 +63,24 @@ export const formatDelivery = (delivery) => ({
     </>
   ),
   delivery_status: formatStatus(delivery.delivery_status),
+  payment_method: formatPaymentMethod(delivery.payment_method),
   order: delivery.order.order_type,
   client: formatPerson(delivery.Client),
   courier: formatPerson(delivery.courier),
 });
+
+export const formatOrder = (order) => ({
+  ...order,
+  payment_method: formatPaymentMethod(order.payment_method),
+  created_at: formatDate(order.created_at),
+  updated_at: formatDate(order.updated_at),
+})
+
+export const formatUsers = (user) => ({
+  ...user,
+  name: formatUserFullName(user),
+  address: formatAddress(user.Client?.address),
+  vehicle: formatVehicle(user.Courier?.vehicle),
+  created_at: formatDate(user.created_at),
+  updated_at: formatDate(user.updated_at),
+})

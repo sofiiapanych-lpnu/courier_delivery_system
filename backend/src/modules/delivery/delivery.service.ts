@@ -92,8 +92,11 @@ export class DeliveryService {
           warehouse: {
             address: {
               OR: [
+                !isNaN(Number(warehouseAddressQuery)) ? { building_number: Number(warehouseAddressQuery) } : {},
+                !isNaN(Number(warehouseAddressQuery)) ? { apartment_number: Number(warehouseAddressQuery) } : {},
                 { street_name: { contains: warehouseAddressQuery, mode: 'insensitive' } },
-                { city: { contains: warehouseAddressQuery, mode: 'insensitive' } }
+                { city: { contains: warehouseAddressQuery, mode: 'insensitive' } },
+                { country: { contains: clientAddressQuery, mode: 'insensitive' } }
               ]
             }
           }
@@ -102,8 +105,11 @@ export class DeliveryService {
         clientAddressQuery ? {
           Address: {
             OR: [
+              !isNaN(Number(clientAddressQuery)) ? { building_number: Number(clientAddressQuery) } : {},
+              !isNaN(Number(clientAddressQuery)) ? { apartment_number: Number(clientAddressQuery) } : {},
               { street_name: { contains: clientAddressQuery, mode: 'insensitive' } },
-              { city: { contains: clientAddressQuery, mode: 'insensitive' } }
+              { city: { contains: clientAddressQuery, mode: 'insensitive' } },
+              { country: { contains: clientAddressQuery, mode: 'insensitive' } }
             ]
           }
         } : {},

@@ -1,245 +1,212 @@
-import React, { useState, useEffect, useContext } from "react";
-import axios from 'axios';
-import VehicleForm from "../components/forms/VehicleForm";
-import AddressForm from "../components/forms/AddressForm";
-import { useUser } from "../context/UserContext";
-import Modal from "../components/Modal";
-import LogoutButton from "../components/LogoutButton";
-import Table from '../components/Table'
-import { format } from 'date-fns';
+import React, { useState } from 'react';
+import { useData } from '../hooks/useData';
+import { useFilters } from '../hooks/useFilters';
+import { userService } from '../api/userService';
+import { formatUsers } from '../utils/formatters';
+import Table from '../components/Table';
+import Modal from '../components/Modal';
+import { Box, Slider } from '@mui/material';
 
+const UsersPage = () => {
+  const [page, setPage] = useState(1);
+  const limit = 5;
+  const initialFormState = {
+    name: '',
+    email: '',
+    role: '',
+    addressQuery: '',
+    vehicleQuery: '',
+    startCreatedAt: '',
+    endCreatedAt: '',
+    startUpdatedAt: '',
+    endUpdatedAt: '',
+  };
 
-const UserPage = () => {
-  const [userInfo, setUserInfo] = useState(null);
-  const [isCourier, setIsCourier] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalContent, setModalContent] = useState(null);
-  const [deliveries, setDeliveries] = useState([]);
+  const {
+    filters,
+    formState,
+    handleFilterChange,
+    handleClearFilters,
+  } = useFilters(initialFormState, setPage);
 
-  const { user } = useUser();
+  const { data: users, setData: setUsers, totalPages } = useData(userService, filters, page, limit);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState('');
 
-  useEffect(() => {
-    if (!user || !user?.sub) {
-      console.error('User ID is not available.');
-      return;
-    }
-
-    axios.get(`http://localhost:3000/user/${user?.sub}`)
-      .then((response) => {
-        const userData = response.data;
-        setUserInfo(userData);
-
-        const isCourier = userData.role === 'courier';
-        setIsCourier(isCourier);
-
-        if (isCourier && userData.Courier?.courier_id) {
-          const courierId = userData.Courier.courier_id;
-
-          axios.get(`http://localhost:3000/courier/${courierId}/deliveries`)
-            .then(res => {
-              setDeliveries(res.data);
-            })
-            .catch(err => console.error("Failed to fetch deliveries", err));
-        } else if (userData.role === 'client' && userData.Client?.client_id) {
-          const clientId = userData.Client.client_id;
-
-          axios.get(`http://localhost:3000/client/${clientId}/deliveries`)
-            .then(res => setDeliveries(res.data))
-            .catch(err => console.error("Failed to fetch client deliveries", err));
-        }
+  const handleEditUser = (id) => {
+    userService.getById(id)
+      .then(response => {
+        setSelectedUser(response.data);
+        setModalMode('edit');
+        setModalOpen(true);
       })
-      .catch((error) => {
-        console.error('Error fetching user data:', error);
-      });
-  }, [user]);
+      .catch(error => console.error('Error fetching user:', error));
+  };
 
-  const handleUserUpdate = (updatedData) => {
-    if (isCourier) {
-      const courierId = userInfo?.Courier?.courier_id;
-      if (!courierId) return;
+  const handleDeleteUser = (userId) => {
+    setSelectedUser(userId);
+    setModalMode('delete');
+    setModalOpen(true);
+  };
 
-      const cleanedData = {
-        vehicle: {
-          licensePlate: updatedData.license_plate,
-          model: updatedData.model,
-          transportType: updatedData.transport_type,
-          isCompanyOwner: Boolean(updatedData.owned_by_company),
-        },
-      };
+  const handleModalClose = () => {
+    setModalOpen(false);
+    setSelectedUser(null);
+  };
 
-      console.log('cleanedData', cleanedData)
+  const handleModalOK = async () => {
+    if (modalMode === 'edit') {
+      try {
+        await userService.update(selectedUser.id, selectedUser);
+        setUsers(prev => prev.map(u => u.id === selectedUser.id ? selectedUser : u));
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setModalOpen(false);
+      }
+    }
 
-      axios.put(`http://localhost:3000/courier/${courierId}`, cleanedData)
-        .then(response => {
-          console.log('Response from backend:', response.data);
-          setUserInfo(prev => ({
-            ...prev,
-            Courier: {
-              ...prev.Courier,
-              vehicle: response.data.vehicle,
-            },
-          }));
-          setIsModalOpen(false);
-        })
-        .catch(error => {
-          console.error('Error updating courier data:', error);
-        });
-    } else {
-      const clientId = userInfo.Client?.client_id;
-      if (!clientId) return;
-
-      const cleanedData = {
-        country: updatedData.country,
-        city: updatedData.city,
-        streetName: updatedData.street_name,
-        buildingNumber: Number(updatedData.building_number),
-        apartmentNumber: updatedData.apartment_number
-          ? Number(updatedData.apartment_number)
-          : null,
-      };
-
-
-      axios.put(`http://localhost:3000/client/${clientId}/address`, cleanedData)
-        .then(response => {
-          setUserInfo(prev => ({
-            ...prev,
-            Client: {
-              ...prev.Client,
-              address: response.data,
-            },
-          }));
-          setIsModalOpen(false);
-        })
-        .catch(error => {
-          console.error('Error updating client address:', error);
-        });
+    if (modalMode === 'delete') {
+      try {
+        await userService.delete(selectedUser);
+        const remaining = users.filter(u => u.id !== selectedUser);
+        setUsers(remaining);
+        if (users.length === 1 && page > 1) {
+          setPage(prev => prev - 1);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setModalOpen(false);
+      }
     }
   };
 
-  const handleEditClick = () => {
-    if (isCourier) {
-      const vehicle = userInfo.Courier?.vehicle || {};
-      setModalContent(
-        <VehicleForm
-          vehicle={vehicle}
-          onUpdate={handleUserUpdate}
-        />
-      );
-    } else {
-      const address = userInfo.Client?.address || {};
-      setModalContent(
-        <AddressForm
-          address={address}
-          onUpdate={handleUserUpdate}
-        />
-      );
-    }
-    setIsModalOpen(true);
-  };
-  const displayValue = (value) => value || 'Not provided';
+  console.log('users', users)
 
-  const formatDate = (dateString) => {
-    if (!dateString) return 'Not available';
-    const date = new Date(dateString);
-    return format(date, 'MMMM dd, yyyy HH:mm:ss');
-  };
+  const formatedUsers = users.map(formatUsers);
 
-  const formatAddress = (address) => {
-    if (!address) return 'No address';
-    const { street_name, building_number, apartment_number, city } = address;
-
-    const base = `${street_name} ${building_number}`;
-    const apartment = apartment_number ? `, Apt. ${apartment_number}` : '';
-
-    return `${base}${apartment}, ${city}`;
-  };
-
-  const formatStatus = (status) => {
-    if (!status) return '';
-    return status
-      .split('_')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(' ');
-  };
-
-
-  if (!userInfo) return <div>Loading...</div>;
-  console.log(userInfo)
-  console.log(deliveries)
-
-  const formattedDeliveries = deliveries.map(delivery => ({
-    ...delivery,
-    created_at: formatDate(delivery.created_at),
-    updated_at: formatDate(delivery.updated_at),
-    address: formatAddress(delivery.Address),
-    warehouse: <>
-      <b>{delivery.warehouse.name}</b><br />
-      {formatAddress(delivery.warehouse.address)}
-    </>,
-    delivery_status: formatStatus(delivery.delivery_status),
-    order: delivery.order.order_type,
-  }));
-
-  const deliveryColumns = [
-    { header: 'ID', accessor: 'delivery_id' },
-    { header: 'Warehouse', accessor: 'warehouse' },
+  const userColumns = [
+    { header: 'Full Name', accessor: 'name' },
+    { header: 'Email', accessor: 'email' },
+    { header: 'Phone Number', accessor: 'phone_number' },
+    { header: 'Role', accessor: 'role' },
     { header: 'Address', accessor: 'address' },
-    { header: 'Order Type', accessor: 'order' },
-    { header: 'Status', accessor: 'delivery_status' },
-    { header: 'Delivery Type', accessor: 'delivery_type' },
-    { header: 'Cost', accessor: 'delivery_cost' },
-    { header: 'Payment Method', accessor: 'payment_method' },
+    { header: 'Vehicle', accessor: 'vehicle' },
     { header: 'Created At', accessor: 'created_at' },
     { header: 'Updated At', accessor: 'updated_at' },
+    {
+      header: 'Actions', accessor: 'actions', cell: ({ row }) => (
+        <>
+          <button onClick={() => handleEditUser(row.id)}>Edit</button>
+          <button onClick={() => handleDeleteUser(row.id)} style={{ marginLeft: '10px' }}>Delete</button>
+        </>
+      )
+    }
   ];
 
   return (
     <div>
-      <LogoutButton></LogoutButton>
-      <h1>User Profile</h1>
-      <div>
-        <h2>Basic Info</h2>
-        <div>Email: {userInfo.email}</div>
-        <div>First Name: {userInfo.first_name}</div>
-        <div>Last Name: {userInfo.last_name}</div>
-        <div>Phone Number: {userInfo.phone_number}</div>
+      <h1>Admin - Users</h1>
+      <div className='filters'>
+        <input
+          name="name"
+          onChange={handleFilterChange}
+          placeholder="User Name"
+          value={formState.name}
+        />
+        <input
+          name="email"
+          onChange={handleFilterChange}
+          placeholder="Email"
+          value={formState.email}
+        />
+        <select
+          name="role"
+          onChange={handleFilterChange}
+          value={formState.role}
+        >
+          <option value="">All Roles</option>
+          <option value="admin">Admin</option>
+          <option value="courier">Courier</option>
+          <option value="client">Client</option>
+        </select>
+
+        <input
+          name="addressQuery"
+          onChange={handleFilterChange}
+          placeholder="Address"
+          value={formState.addressQuery}
+        />
+
+        <input
+          name="vehicleQuery"
+          onChange={handleFilterChange}
+          placeholder="Vehicle License Plate"
+          value={formState.vehicleQuery}
+        />
+
+        <input
+          name="startCreatedAt"
+          type="datetime-local"
+          onChange={handleFilterChange}
+          value={formState.startCreatedAt}
+        />
+        <input
+          name="endCreatedAt"
+          type="datetime-local"
+          onChange={handleFilterChange}
+          value={formState.endCreatedAt}
+        />
+
+        <input
+          name="startUpdatedAt"
+          type="datetime-local"
+          onChange={handleFilterChange}
+          value={formState.startUpdatedAt}
+        />
+        <input
+          name="endUpdatedAt"
+          type="datetime-local"
+          onChange={handleFilterChange}
+          value={formState.endUpdatedAt}
+        />
+
+        <button onClick={handleClearFilters}>Clear Filters</button>
       </div>
 
-      <div>
-        <h2>{isCourier ? "Vehicle Info" : "Address Info"}</h2>
-        {isCourier ? (
-          <>
-            <div>License Plate: {userInfo.Courier?.vehicle.license_plate}</div>
-            <div>Model: {userInfo.Courier?.vehicle.model}</div>
-            <div>Transport Type: {userInfo.Courier?.vehicle.transport_type}</div>
-            <div>Company Owned: {userInfo.Courier?.vehicle.is_company_owner ? "Yes" : "No"}</div>
-          </>
-        ) : (
-          <>
-            <div>Country: {displayValue(userInfo.Client?.address?.country)}</div>
-            <div>City: {displayValue(userInfo.Client?.address?.city)}</div>
-            <div>Street: {displayValue(userInfo.Client?.address?.street_name)}</div>
-            <div>Building: {displayValue(userInfo.Client?.address?.building_number)}</div>
-            <div>Apartment: {displayValue(userInfo.Client?.address?.apartment_number)}</div>
-          </>
-
-        )}
-        <button onClick={handleEditClick}>Edit</button>
-
-
-        <div>
-          <h2>Your Deliveries</h2>
-          <Table data={formattedDeliveries} columns={deliveryColumns} />
-        </div>
-
-
+      <Table data={formatedUsers} columns={userColumns} />
+      <div style={{ marginTop: '20px' }}>
+        <button
+          onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+          disabled={page === 1}
+        >
+          Prev
+        </button>
+        <span style={{ margin: '0 10px' }}>Page {page} of {totalPages}</span>
+        <button
+          onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
+          disabled={page === totalPages}
+        >
+          Next
+        </button>
       </div>
 
-      <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)} onOK={() => null} okText=" " closeText="Close">
-        {modalContent}
-      </Modal>
+      {modalOpen && (
+        <Modal open={modalOpen} onClose={handleModalClose} onOK={handleModalOK}>
+          {modalMode === 'edit' ? (
+            <div>Edit User</div>
+          ) : (
+            <div>
+              <h2>Confirm Deletion</h2>
+              <p>Are you sure you want to delete this user?</p>
+            </div>
+          )}
+        </Modal>
+      )}
     </div>
   );
 };
 
-export default UserPage;
+export default UsersPage;
