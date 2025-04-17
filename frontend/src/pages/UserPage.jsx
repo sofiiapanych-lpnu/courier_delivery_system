@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import axios from 'axios';
-import VehicleForm from "../components/VehicleForm";
-import AddressForm from "../components/AddressForm";
+import VehicleForm from "../components/forms/VehicleForm";
+import AddressForm from "../components/forms/AddressForm";
 import { useUser } from "../context/UserContext";
 import Modal from "../components/Modal";
 import LogoutButton from "../components/LogoutButton";

@@ -1,16 +1,22 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { format } from 'date-fns';
+import React, { useState } from 'react';
+import { useDeliveries } from '../hooks/useDeliveries';
+import { useFilters } from '../hooks/useFilters'
+import { deliveryService } from '../api/deliveryServise';
+import { warehouseService } from '../api/warehouseService'
+import { addressService } from '../api/addressService';
+import { clientService } from '../api/clientService'
+import { courierService } from '../api/courierService'
+import { orderService } from '../api/orderService'
+import { formatDelivery } from '../utils/formatters';
+import { normalizeOrderData, normalizeDeliveryData } from '../utils/dataNormalizers'
 import Table from '../components/Table'
 import Modal from '../components/Modal'
+import DeliveryForm from '../components/forms/DeliveryForm';
 
 const AdminPage = () => {
-  const [deliveries, setDeliveries] = useState([]);
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const limit = 5;
-  const [filters, setFilters] = useState({});
-  const [formState, setFormState] = useState({
+  const initialFormState = {
     deliveryStatus: '',
     deliveryType: '',
     orderTypeQuery: '',
@@ -19,45 +25,21 @@ const AdminPage = () => {
     paymentMethod: '',
     startTime: '',
     endTime: '',
-  });
+  };
+  const {
+    filters,
+    formState,
+    handleFilterChange,
+    handleClearFilters,
+  } = useFilters(initialFormState, setPage);
+  const { deliveries, setDeliveries, totalPages } = useDeliveries(filters, page, limit);
+
   const [selectedDelivery, setSelectedDelivery] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState('');
-  const [warehouses, setWarehouses] = useState([]);
-
-
-  const fetchDeliveries = () => {
-    const queryParams = new URLSearchParams({
-      ...filters,
-      page,
-      limit
-    }).toString();
-
-    axios.get(`http://localhost:3000/delivery?${queryParams}`)
-      .then(response => {
-        setDeliveries(response.data.items);
-        setPage(response.data.meta.currentPage);
-        setTotalPages(response.data.meta.totalPages);
-      })
-      .catch(error => console.error('Error fetching deliveries:', error));
-  };
-
-  useEffect(() => {
-    fetchDeliveries();
-  }, [filters, page]);
-
-  const handleFilterChange = (e) => {
-    const { name, value } = e.target;
-    setFilters(prev => ({
-      ...prev,
-      [name]: value
-    }));
-    setFormState((prev) => ({ ...prev, [name]: value }));
-    setPage(1);
-  };
 
   const handleEditDelivery = (id) => {
-    axios.get(`http://localhost:3000/delivery/${id}`)
+    deliveryService.getById(id)
       .then(response => {
         setSelectedDelivery(response.data);
         setModalMode('edit');
@@ -77,106 +59,84 @@ const AdminPage = () => {
     setSelectedDelivery(null);
   };
 
-  const handleModalOK = () => {
+  const handleModalOK = async () => {
     if (modalMode === 'edit') {
-      const deliveryId = selectedDelivery.delivery_id;
-      const warehouse = selectedDelivery.warehouse;
-      const warehouseAddress = warehouse.address;
+      const {
+        delivery_id,
+        warehouse,
+        Address: deliveryAddress,
+        order,
+        Client: client,
+        courier,
+        ...cleanDelivery
+      } = selectedDelivery;
 
-      console.log('Editing delivery:', selectedDelivery);
-      axios.put(`http://localhost:3000/address/${warehouseAddress.address_id}`, warehouseAddress)
-        .then(() => {
-          return axios.put(`http://localhost:3000/warehouse/${warehouse.warehouse_id}`, {
-            name: warehouse.name,
-            address_id: warehouseAddress.address_id
-          });
-        })
-        .then(() => {
-          const deliveryPayload = {
-            ...selectedDelivery,
-            warehouse_id: warehouse.warehouse_id,
-            address_id: selectedDelivery.Address?.address_id,
-          };
+      console.log('warehouse', warehouse, 'deliveryAddress', deliveryAddress, 'delivery_id', delivery_id, 'order', order, 'client', client, 'courier', courier)
 
-          delete deliveryPayload.warehouse;
-          delete deliveryPayload.Address;
+      try {
+        await addressService.update(warehouse.address.address_id, warehouse.address);
 
-          return axios.put(`http://localhost:3000/delivery/${deliveryId}`, deliveryPayload);
+        await warehouseService.update(warehouse.warehouse_id, {
+          name: warehouse.name,
+          address_id: deliveryAddress.address_id
         })
-        .then(response => {
-          setDeliveries(deliveries.map(d => d.delivery_id === deliveryId ? response.data : d));
-          setModalOpen(false);
-        })
-        .catch(error => console.error('Error updating warehouse/address/delivery:', error));
+
+        await addressService.update(deliveryAddress.address_id, deliveryAddress);
+
+        if (order && order.order_id) {
+          console.log('Updating order:', order);
+          const normalizedOrder = normalizeOrderData(order);
+          await orderService.update(order.order_id, normalizedOrder);
+
+        }
+
+        if (client && client.client_id) {
+          await clientService.update(client.client_id, client);
+        }
+
+        if (courier && courier.courier_id) {
+          await courierService.update(courier.courier_id, courier);
+        }
+
+        const deliveryPayload = {
+          ...cleanDelivery,
+          warehouse_id: warehouse.warehouse_id,
+          address_id: Address?.address_id,
+          client_id: client.client_id,
+          courier_id: courier.courier_id,
+          order_id: order.order_id,
+        };
+
+        const normalizedDelivery = normalizeDeliveryData(deliveryPayload);
+
+        const { data } = await deliveryService.update(delivery_id, normalizedDelivery);
+
+        setDeliveries(prev => prev.map(d => d.delivery_id === delivery_id ? data : d));
+      } catch (err) {
+        console.log(err);
+      } finally {
+        setModalOpen(false);
+      }
     }
 
     if (modalMode === 'delete') {
-      console.log('Deleting delivery:', selectedDelivery);
-      axios.delete(`http://localhost:3000/delivery/${selectedDelivery}`)
-        .then(() => {
-          setDeliveries(deliveries.filter(d => d.delivery_id !== selectedDelivery));
-          setModalOpen(false);
-
-          if (deliveries.length === 1 && page > 1) {
-            setPage(prev => prev - 1);
-          } else {
-            fetchDeliveries();
-          }
-        })
-        .catch(error => console.error('Error deleting delivery:', error));
+      try {
+        await deliveryService.delete(selectedDelivery);
+        const remaining = deliveries.filter(d => d.delivery_id !== selectedDelivery);
+        setDeliveries(remaining);
+        if (deliveries.length === 1 && page > 1) {
+          setPage(prev => prev - 1);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setModalOpen(false);
+      }
     }
   };
 
-
-  const formatDate = (dateString) => {
-    if (!dateString) return 'Not available';
-    const date = new Date(dateString);
-    return format(date, 'MMMM dd, yyyy HH:mm:ss');
-  };
-
-  const formatAddress = (address) => {
-    if (!address) return 'No address';
-    const { street_name, building_number, apartment_number, city, country } = address;
-
-    const base = `${street_name} ${building_number}`;
-    const apartment = apartment_number ? `, Apt. ${apartment_number}` : '';
-
-    return `${base}${apartment}, ${city}, ${country}`;
-  };
-
-  const formatStatus = (status) => {
-    if (!status) return '';
-    return status
-      .split('_')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(' ');
-  };
-
-  const formatPerson = (person) => {
-    if (!person || !person.user) return 'No name';
-
-    const { first_name, last_name } = person.user;
-
-    return `${first_name} ${last_name}`;
-  };
-
   console.log(deliveries)
-  const formattedDeliveries = deliveries.map(delivery => ({
-    ...delivery,
-    created_at: formatDate(delivery.created_at),
-    updated_at: formatDate(delivery.updated_at),
-    start_time: formatDate(delivery.start_time),
-    end_time: formatDate(delivery.end_time),
-    address: formatAddress(delivery.Address),
-    warehouse: <>
-      <b>{delivery.warehouse.name}</b><br />
-      {formatAddress(delivery.warehouse.address)}
-    </>,
-    delivery_status: formatStatus(delivery.delivery_status),
-    order: delivery.order.order_type,
-    client: formatPerson(delivery.Client),
-    courier: formatPerson(delivery.courier)
-  }));
+  const formattedDeliveries = deliveries.map(formatDelivery);
 
   const deliveryColumns = [
     { header: 'ID', accessor: 'delivery_id' },
@@ -213,9 +173,9 @@ const AdminPage = () => {
       <div className='filters'>
         <select name="deliveryStatus" onChange={handleFilterChange} value={formState.deliveryStatus}>
           <option value="">All Statuses</option>
-          <option value="PENDING">Pending</option>
-          <option value="IN_PROGRESS">In Progress</option>
-          <option value="DELIVERED">Delivered</option>
+          <option value="pending">Pending</option>
+          <option value="in_progress">In Progress</option>
+          <option value="delivered">Delivered</option>
         </select>
         <select name="deliveryType" onChange={handleFilterChange} value={formState.deliveryType}>
           <option value="">All Types</option>
@@ -235,19 +195,7 @@ const AdminPage = () => {
         <input name="startTime" type="datetime-local" onChange={handleFilterChange} value={formState.startTime} />
         <input name="endTime" type="datetime-local" onChange={handleFilterChange} value={formState.endTime} />
 
-        <button onClick={() => {
-          setFilters({});
-          setFormState({
-            deliveryStatus: '',
-            deliveryType: '',
-            orderTypeQuery: '',
-            warehouseAddressQuery: '',
-            clientAddressQuery: '',
-            paymentMethod: '',
-            startTime: '',
-            endTime: '',
-          });
-        }}>Clear Filters</button>
+        <button onClick={handleClearFilters}>Clear Filters</button>
       </div>
 
       <Table data={formattedDeliveries} columns={deliveryColumns} />
@@ -270,292 +218,17 @@ const AdminPage = () => {
       {modalOpen && (
         <Modal open={modalOpen} onClose={handleModalClose} onOK={handleModalOK}>
           {modalMode === 'edit' ? (
-            <div>
-              <h2>Edit Delivery</h2>
-              {
-                console.log('selectedDelivery', selectedDelivery)}
-              <div className='warehouse'>
-                <input
-                  type="text"
-                  value={selectedDelivery?.warehouse.name || ''}
-                  onChange={(e) => setSelectedDelivery({
-                    ...selectedDelivery,
-                    warehouse: {
-                      ...selectedDelivery?.warehouse,
-                      name: e.target.value
-                    }
-                  })}
-                />
-                <input
-                  type="text"
-                  value={selectedDelivery?.warehouse.address.country || ''}
-                  onChange={(e) => setSelectedDelivery({
-                    ...selectedDelivery,
-                    warehouse: {
-                      ...selectedDelivery?.warehouse,
-                      address: {
-                        ...selectedDelivery?.warehouse.address,
-                        country: e.target.value
-                      }
-                    }
-                  })}
-                />
-                <input
-                  type="text"
-                  value={selectedDelivery?.warehouse.address.city || ''}
-                  onChange={(e) => setSelectedDelivery({
-                    ...selectedDelivery,
-                    warehouse: {
-                      ...selectedDelivery?.warehouse,
-                      address: {
-                        ...selectedDelivery?.warehouse.address,
-                        city: e.target.value
-                      }
-                    }
-                  })}
-                />
-                <input
-                  type="text"
-                  value={selectedDelivery?.warehouse.address.building_number || ''}
-                  onChange={(e) => setSelectedDelivery({
-                    ...selectedDelivery,
-                    warehouse: {
-                      ...selectedDelivery?.warehouse,
-                      address: {
-                        ...selectedDelivery?.warehouse.address,
-                        building_number: e.target.value
-                      }
-                    }
-                  })}
-                />
-                <input
-                  type="text"
-                  value={selectedDelivery?.warehouse.address.apartment_number || ''}
-                  onChange={(e) => setSelectedDelivery({
-                    ...selectedDelivery,
-                    warehouse: {
-                      ...selectedDelivery?.warehouse,
-                      address: {
-                        ...selectedDelivery?.warehouse.address,
-                        apartment_number: e.target.value
-                      }
-                    }
-                  })}
-                />
-              </div>
-              <div className='address'>
-                <input
-                  type="text"
-                  value={selectedDelivery?.Address.country || ''}
-                  onChange={(e) => setSelectedDelivery({
-                    ...selectedDelivery,
-                    address: {
-                      ...selectedDelivery?.Address,
-                      country: e.target.value
-                    }
-                  })}
-                />
-                <input
-                  type="text"
-                  value={selectedDelivery?.Address.city || ''}
-                  onChange={(e) => setSelectedDelivery({
-                    ...selectedDelivery,
-                    address: {
-                      ...selectedDelivery?.Address,
-                      city: e.target.value
-                    }
-                  })}
-                />
-                <input
-                  type="text"
-                  value={selectedDelivery?.Address.street_name || ''}
-                  onChange={(e) => setSelectedDelivery({
-                    ...selectedDelivery,
-                    address: {
-                      ...selectedDelivery?.Address,
-                      street_name: e.target.value
-                    }
-                  })}
-                />
-                <input
-                  type="text"
-                  value={selectedDelivery?.Address.building_number || ''}
-                  onChange={(e) => setSelectedDelivery({
-                    ...selectedDelivery,
-                    address: {
-                      ...selectedDelivery?.Address,
-                      building_number: e.target.value
-                    }
-                  })}
-                />
-                <input
-                  type="text"
-                  value={selectedDelivery?.Address.apartment_number || ''}
-                  onChange={(e) => setSelectedDelivery({
-                    ...selectedDelivery,
-                    address: {
-                      ...selectedDelivery?.Address,
-                      apartment_number: e.target.value
-                    }
-                  })}
-                />
-              </div>
-              <div className='order'>
-                <input
-                  type="text"
-                  value={selectedDelivery?.order?.order_type || ''}
-                  onChange={(e) => setSelectedDelivery({
-                    ...selectedDelivery,
-                    order: {
-                      ...selectedDelivery?.order,
-                      order_type: e.target.value
-                    }
-                  })}
-                />
-
-                <input
-                  type="text"
-                  value={selectedDelivery?.order?.description || ''}
-                  onChange={(e) => setSelectedDelivery({
-                    ...selectedDelivery,
-                    order: {
-                      ...selectedDelivery?.order,
-                      description: e.target.value
-                    }
-                  })}
-                />
-
-                <input
-                  type="text"
-                  value={selectedDelivery?.order?.cost || ''}
-                  onChange={(e) => setSelectedDelivery({
-                    ...selectedDelivery,
-                    order: {
-                      ...selectedDelivery?.order,
-                      cost: e.target.value
-                    }
-                  })}
-                />
-
-                <input
-                  type="text"
-                  value={selectedDelivery?.order?.weight || ''}
-                  onChange={(e) => setSelectedDelivery({
-                    ...selectedDelivery,
-                    order: {
-                      ...selectedDelivery?.order,
-                      weight: e.target.value
-                    }
-                  })}
-                />
-
-                <input
-                  type="text"
-                  value={selectedDelivery?.order?.height || ''}
-                  onChange={(e) => setSelectedDelivery({
-                    ...selectedDelivery,
-                    order: {
-                      ...selectedDelivery?.order,
-                      height: e.target.value
-                    }
-                  })}
-                />
-
-                <input
-                  type="text"
-                  value={selectedDelivery?.order?.length || ''}
-                  onChange={(e) => setSelectedDelivery({
-                    ...selectedDelivery,
-                    order: {
-                      ...selectedDelivery?.order,
-                      length: e.target.value
-                    }
-                  })}
-                />
-
-                <input
-                  type="text"
-                  value={selectedDelivery?.order?.width || ''}
-                  onChange={(e) => setSelectedDelivery({
-                    ...selectedDelivery,
-                    order: {
-                      ...selectedDelivery?.order,
-                      width: e.target.value
-                    }
-                  })}
-                />
-
-                <input
-                  type="text"
-                  value={selectedDelivery?.order?.payment_method || ''}
-                  onChange={(e) => setSelectedDelivery({
-                    ...selectedDelivery,
-                    order: {
-                      ...selectedDelivery?.order,
-                      payment_method: e.target.value
-                    }
-                  })}
-                />
-              </div>
-              <div className='delivery'>
-                <input type="text" value={selectedDelivery?.delivery_type || ''} onChange={(e) => setSelectedDelivery({ ...selectedDelivery, delivery_type: e.target.value })} />
-                <input type="text" value={selectedDelivery?.delivery_status || ''} onChange={(e) => setSelectedDelivery({ ...selectedDelivery, delivery_status: e.target.value })} />
-                <input type="text" value={selectedDelivery?.delivery_cost || ''} onChange={(e) => setSelectedDelivery({ ...selectedDelivery, delivery_cost: e.target.value })} />
-                <input type="text" value={selectedDelivery?.desired_duration || ''} onChange={(e) => setSelectedDelivery({ ...selectedDelivery, desired_duration: e.target.value })} />
-              </div>
-              <div className='client'>
-                <input type="text" value={selectedDelivery?.Client?.user?.first_name || ''} onChange={(e) => setSelectedDelivery({
-                  ...selectedDelivery,
-                  client: {
-                    ...selectedDelivery?.client,
-                    user: {
-                      ...selectedDelivery?.client?.user,
-                      first_name: e.target.value
-                    }
-                  }
-                })} />
-                <input type="text" value={selectedDelivery?.Client?.user?.last_name || ''} onChange={(e) => setSelectedDelivery({ ...selectedDelivery, client: { ...selectedDelivery?.client, user: { ...selectedDelivery?.client?.user, last_name: e.target.value } } })} />
-                <input type="text" value={selectedDelivery?.Client?.user?.email || ''} onChange={(e) => setSelectedDelivery({ ...selectedDelivery, client: { ...selectedDelivery?.client, user: { ...selectedDelivery?.client?.user, email: e.target.value } } })} />
-                <input type="text" value={selectedDelivery?.Client?.user?.phone_number || ''} onChange={(e) => setSelectedDelivery({ ...selectedDelivery, client: { ...selectedDelivery?.client, user: { ...selectedDelivery?.client?.user, phone_number: e.target.value } } })} />
-              </div>
-
-              <div className='courier'>
-                <input type="text" value={selectedDelivery?.courier?.license_plate || ''} onChange={(e) => setSelectedDelivery({ ...selectedDelivery, courier: { ...selectedDelivery?.courier, license_plate: e.target.value } })} />
-                <input type="text" value={selectedDelivery?.courier?.user?.first_name || ''} onChange={(e) => setSelectedDelivery({
-                  ...selectedDelivery,
-                  courier: {
-                    ...selectedDelivery?.courier,
-                    user: {
-                      ...selectedDelivery?.courier?.user,
-                      first_name: e.target.value
-                    }
-                  }
-                })} />
-                <input type="text" value={selectedDelivery?.courier?.user?.last_name || ''} onChange={(e) => setSelectedDelivery({ ...selectedDelivery, courier: { ...selectedDelivery?.courier, user: { ...selectedDelivery?.courier?.user, last_name: e.target.value } } })} />
-                <input type="text" value={selectedDelivery?.courier?.user?.email || ''} onChange={(e) => setSelectedDelivery({ ...selectedDelivery, courier: { ...selectedDelivery?.courier, user: { ...selectedDelivery?.courier?.user, email: e.target.value } } })} />
-                <input type="text" value={selectedDelivery?.courier?.user?.phone_number || ''} onChange={(e) => setSelectedDelivery({ ...selectedDelivery, courier: { ...selectedDelivery?.courier, user: { ...selectedDelivery?.courier?.user, phone_number: e.target.value } } })} />
-              </div>
-              <div className='warehouse'>
-                <input type="text" value={selectedDelivery?.warehouse?.name || ''} onChange={(e) => setSelectedDelivery({ ...selectedDelivery, warehouse: { ...selectedDelivery?.warehouse, name: e.target.value } })} />
-                <input type="text" value={selectedDelivery?.warehouse?.contact_number || ''} onChange={(e) => setSelectedDelivery({ ...selectedDelivery, warehouse: { ...selectedDelivery?.warehouse, contact_number: e.target.value } })} />
-                <input type="text" value={selectedDelivery?.warehouse?.address?.street_name || ''} onChange={(e) => setSelectedDelivery({ ...selectedDelivery, warehouse: { ...selectedDelivery?.warehouse, address: { ...selectedDelivery?.warehouse?.address, street_name: e.target.value } } })} />
-              </div>
-
-              <input
-                type="text"
-                value={selectedDelivery?.delivery_status || ''}
-                onChange={(e) => setSelectedDelivery({ ...selectedDelivery, delivery_status: e.target.value })}
-              />
-            </div>
+            <DeliveryForm selectedDelivery={selectedDelivery} setSelectedDelivery={setSelectedDelivery} />
           ) : (
             <div>
               <h2>Confirm Deletion</h2>
               <p>Are you sure you want to delete this delivery?</p>
             </div>
-          )}
-        </Modal>
+          )
+          }
+        </Modal >
       )}
-    </div>
+    </div >
   );
 };
 

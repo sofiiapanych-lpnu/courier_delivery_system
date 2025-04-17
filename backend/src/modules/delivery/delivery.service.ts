@@ -195,7 +195,6 @@ export class DeliveryService {
     };
   }
 
-
   async getDeliveryById(id: number) {
     const delivery = await this.prisma.delivery.findUnique({
       where: { delivery_id: id },

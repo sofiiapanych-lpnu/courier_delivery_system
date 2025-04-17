@@ -87,18 +87,18 @@ export class CourierController {
     }
   }
 
-  @Put(':id')
-  async updateCourierVehicle(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() dto: UpdateCourierDto
-  ) {
-    try {
-      return await this.courierService.updateCourier(id, dto);
-    } catch (error) {
-      throw new HttpException(
-        `Failed to update courier: ${error.message}`,
-        HttpStatus.BAD_REQUEST
-      );
-    }
-  }
+  // @Put(':id')
+  // async updateCourierVehicle(
+  //   @Param('id', ParseIntPipe) id: number,
+  //   @Body() dto: UpdateCourierDto
+  // ) {
+  //   try {
+  //     return await this.courierService.updateCourier(id, dto);
+  //   } catch (error) {
+  //     throw new HttpException(
+  //       `Failed to update courier: ${error.message}`,
+  //       HttpStatus.BAD_REQUEST
+  //     );
+  //   }
+  // }
 }
