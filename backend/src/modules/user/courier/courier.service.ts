@@ -52,7 +52,7 @@ export class CourierService {
       skip,
       take: limit,
       include: {
-        user: true, // Щоб повернути також інформацію з User
+        user: true,
       },
     });
   }
@@ -131,35 +131,17 @@ export class CourierService {
       where: { license_plate: licensePlate },
     });
 
-    if (existingVehicle) {
-      if (existingVehicle.is_company_owner) {
-        if (licensePlate) {
-          await this.vehicleService.updateVehicle(licensePlate, vehicleDto);
-        }
-        return existingVehicle.license_plate;
-      }
-
-      if (courier.license_plate !== existingVehicle.license_plate) {
-        throw new Error('This vehicle already exists and is not owned by a company.');
-      }
-      if (licensePlate) {
-        await this.vehicleService.updateVehicle(licensePlate, vehicleDto);
-      }
-      return existingVehicle.license_plate;
+    if (!existingVehicle) {
+      throw new Error('Vehicle does not exist. Cannot assign or update.');
     }
-    console.log('Validating new vehicle fields:', vehicleDto);
 
-    this.validateVehicleFields(vehicleDto);
+    if ((existingVehicle.is_company_owner || courier.license_plate === existingVehicle.license_plate) && licensePlate) {
+      await this.vehicleService.updateVehicle(licensePlate, vehicleDto);
+      return licensePlate;
+    }
 
-    const newVehicle = await this.vehicleService.createVehicle(vehicleDto as CreateVehicleDto);
-    return newVehicle.license_plate;
+    throw new Error('This vehicle already exists and is not owned by a company.');
   }
 
-  private validateVehicleFields(vehicle: UpdateVehicleDto): void {
-    const { model, transportType, isCompanyOwner, licensePlate } = vehicle;
-
-    if (!model || !transportType || isCompanyOwner == null || !licensePlate) {
-      throw new Error('Missing required vehicle fields: model, transportType, isCompanyOwner or licensePlate');
-    }
-  }
 }
+

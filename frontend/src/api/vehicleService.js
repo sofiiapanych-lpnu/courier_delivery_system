@@ -6,4 +6,5 @@ export const vehicleService = {
   getById: (id) => api.get(`/vehicle/${id}`),
   update: (id, data) => api.put(`/vehicle/${id}`, data),
   delete: (id) => api.delete(`/vehicle/${id}`),
+  getCompanyVehicles: () => api.get('/vehicle/company'),
 };

@@ -91,4 +91,16 @@ export class VehicleService {
 
     return { message: `Vehicle with ID ${licensePlate} deleted successfully` };
   }
+
+  async getCompanyVehicles(): Promise<Vehicle[]> {
+    return this.prisma.vehicle.findMany({
+      where: {
+        is_company_owner: true,
+      },
+      orderBy: {
+        transport_type: 'asc',
+      },
+    });
+  }
+
 }

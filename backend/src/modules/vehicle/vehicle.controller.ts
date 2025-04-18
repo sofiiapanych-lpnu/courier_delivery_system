@@ -33,6 +33,11 @@ export class VehicleController {
     return this.vehicleService.getAllVehicles(query);
   }
 
+  @Get('company')
+  getCompanyVehicles() {
+    return this.vehicleService.getCompanyVehicles();
+  }
+
   @Get(':vehicleId')
   async getVehicleById(@Param('vehicleId') vehicleId: string): Promise<Vehicle> {
     return this.vehicleService.getVehicleById(vehicleId);

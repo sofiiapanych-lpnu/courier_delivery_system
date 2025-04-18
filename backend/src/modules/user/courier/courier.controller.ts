@@ -66,6 +66,7 @@ export class CourierController {
     @Body() dto: UpdateCourierDto
   ) {
     try {
+      console.log('updateCourier dto', dto, id)
       return await this.courierService.updateCourier(id, dto);
     } catch (error) {
       throw new HttpException(

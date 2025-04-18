@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useData } from '../hooks/useData';
 import { useFilters } from '../hooks/useFilters';
 import { userService } from '../api/userService';
@@ -6,6 +6,12 @@ import { formatUsers } from '../utils/formatters';
 import Table from '../components/Table';
 import Modal from '../components/Modal';
 import { Box, Slider } from '@mui/material';
+import UserForm from '../components/forms/UserForm';
+import { addressService } from '../api/addressService';
+import { normalizeAddressData, normalizeUserData, normalizeVehicleData } from '../utils/dataNormalizers';
+import { clientService } from '../api/clientService';
+import { vehicleService } from '../api/vehicleService';
+import { courierService } from '../api/courierService';
 
 const UsersPage = () => {
   const [page, setPage] = useState(1);
@@ -31,6 +37,7 @@ const UsersPage = () => {
 
   const { data: users, setData: setUsers, totalPages } = useData(userService, filters, page, limit);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [originalLicensePlate, setOriginalLicensePlate] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState('');
 
@@ -38,6 +45,10 @@ const UsersPage = () => {
     userService.getById(id)
       .then(response => {
         setSelectedUser(response.data);
+        const vehicle = response.data?.Courier?.vehicle;
+        if (vehicle?.license_plate && !vehicle?.is_company_owner) {
+          setOriginalLicensePlate(vehicle.license_plate);
+        }
         setModalMode('edit');
         setModalOpen(true);
       })
@@ -58,8 +69,69 @@ const UsersPage = () => {
   const handleModalOK = async () => {
     if (modalMode === 'edit') {
       try {
-        await userService.update(selectedUser.id, selectedUser);
-        setUsers(prev => prev.map(u => u.id === selectedUser.id ? selectedUser : u));
+        if (selectedUser.role === "client") {
+          const addressData = selectedUser.Client.address;
+          if (addressData) {
+            if (!addressData?.address_id) {
+              const normalizedAddress = normalizeAddressData(addressData);
+
+              const { data: createdAddress } = await addressService.create(normalizedAddress);
+
+              await clientService.update(selectedUser.Client.client_id, {
+                addressId: createdAddress.address_id,
+              });
+
+              const { data: updatedUser } = await userService.getById(selectedUser.user_id);
+              setSelectedUser(updatedUser);
+            } else if (addressData?.address_id) {
+              const normalizedAddress = normalizeAddressData(addressData);
+
+              await addressService.update(addressData.address_id, normalizedAddress);
+            }
+          }
+        } else if (selectedUser.role === "courier") {
+          const vehicleData = selectedUser.Courier.vehicle;
+          console.log('vehicleData', vehicleData)
+          if (vehicleData) {
+            if (vehicleData?.is_company_owner) {
+              // const normalizedVehicle = normalizeVehicleData(vehicleData);
+              // await courierService.update(selectedUser.Courier.courier_id, {
+              //   licensePlate: normalizedVehicle.licensePlate,
+              // });
+              const normalizedVehicle = normalizeVehicleData(vehicleData);
+              console.log('selectedUser.Courier.courier_id', selectedUser.Courier.courier_id, normalizedVehicle.licensePlate)
+
+              const { data } = await courierService.update(selectedUser.Courier.courier_id, {
+                vehicle: {
+                  licensePlate: normalizedVehicle.licensePlate
+                }
+              });
+              console.log('data', data)
+
+              const { data: updatedUser } = await userService.getById(selectedUser.user_id);
+              setSelectedUser(updatedUser);
+            } else {
+              const normalizedVehicle = normalizeVehicleData(vehicleData);
+              console.log('normalizedVehicle', normalizedVehicle)
+              console.log('originalLicensePlate', originalLicensePlate)
+
+              const { data } = await vehicleService.update(originalLicensePlate, normalizedVehicle);
+              console.log('vdata', data)
+              await courierService.update(selectedUser.Courier.courier_id, {
+                vehicle: {
+                  normalizedVehicle
+                }
+              });
+            }
+          }
+        }
+        const normalizedUser = normalizeUserData(selectedUser);
+
+        await userService.update(normalizedUser.userId, normalizedUser);
+
+        const { data: finalUpdatedUser } = await userService.getById(selectedUser.user_id);
+        setSelectedUser(finalUpdatedUser);
+        setUsers(prev => prev.map(u => u.user_id === finalUpdatedUser.user_id ? finalUpdatedUser : u));
       } catch (err) {
         console.error(err);
       } finally {
@@ -70,7 +142,7 @@ const UsersPage = () => {
     if (modalMode === 'delete') {
       try {
         await userService.delete(selectedUser);
-        const remaining = users.filter(u => u.id !== selectedUser);
+        const remaining = users.filter(u => u.user_id !== selectedUser);
         setUsers(remaining);
         if (users.length === 1 && page > 1) {
           setPage(prev => prev - 1);
@@ -83,7 +155,7 @@ const UsersPage = () => {
     }
   };
 
-  console.log('users', users)
+  //console.log('users', users)
 
   const formatedUsers = users.map(formatUsers);
 
@@ -99,12 +171,13 @@ const UsersPage = () => {
     {
       header: 'Actions', accessor: 'actions', cell: ({ row }) => (
         <>
-          <button onClick={() => handleEditUser(row.id)}>Edit</button>
-          <button onClick={() => handleDeleteUser(row.id)} style={{ marginLeft: '10px' }}>Delete</button>
+          <button onClick={() => handleEditUser(row.user_id)}>Edit</button>
+          <button onClick={() => handleDeleteUser(row.user_id)} style={{ marginLeft: '10px' }}>Delete</button>
         </>
       )
     }
   ];
+  //console.log('selectedUser ___', selectedUser)
 
   return (
     <div>
@@ -196,7 +269,7 @@ const UsersPage = () => {
       {modalOpen && (
         <Modal open={modalOpen} onClose={handleModalClose} onOK={handleModalOK}>
           {modalMode === 'edit' ? (
-            <div>Edit User</div>
+            <UserForm selectedUser={selectedUser} setSelectedUser={setSelectedUser} />
           ) : (
             <div>
               <h2>Confirm Deletion</h2>

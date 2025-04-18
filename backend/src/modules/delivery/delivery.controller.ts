@@ -52,7 +52,6 @@ export class DeliveryController {
       page: page ? parseInt(page, 10) : undefined,
       limit: limit ? parseInt(limit, 10) : undefined,
     };
-    console.log('clientAddressQuery', clientAddressQuery)
     return this.deliveryService.getAllDelivery(query);
   }
 

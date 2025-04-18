@@ -149,8 +149,6 @@ export class UserService {
     };
   }
 
-
-
   async getUserById(userId: number): Promise<User> {
     const user = await this.prisma.user.findUnique({
       where: { user_id: userId },
@@ -199,6 +197,10 @@ export class UserService {
         last_name: dto.lastName,
         ...(hashedPassword && { hash: hashedPassword }),
       },
+      // include:{
+      //   Client: true,
+      //   Courier: true,
+      // }
     });
   }
 
