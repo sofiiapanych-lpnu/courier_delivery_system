@@ -94,10 +94,6 @@ const UsersPage = () => {
           console.log('vehicleData', vehicleData)
           if (vehicleData) {
             if (vehicleData?.is_company_owner) {
-              // const normalizedVehicle = normalizeVehicleData(vehicleData);
-              // await courierService.update(selectedUser.Courier.courier_id, {
-              //   licensePlate: normalizedVehicle.licensePlate,
-              // });
               const normalizedVehicle = normalizeVehicleData(vehicleData);
               console.log('selectedUser.Courier.courier_id', selectedUser.Courier.courier_id, normalizedVehicle.licensePlate)
 
@@ -142,9 +138,10 @@ const UsersPage = () => {
     if (modalMode === 'delete') {
       try {
         await userService.delete(selectedUser);
-        const remaining = users.filter(u => u.user_id !== selectedUser);
-        setUsers(remaining);
-        if (users.length === 1 && page > 1) {
+        const { data: updatedUsers } = await userService.getAll(filters, page, limit);
+        setUsers(updatedUsers.items);
+
+        if (updatedUsers.length === 0 && page > 1) {
           setPage(prev => prev - 1);
         }
       } catch (err) {

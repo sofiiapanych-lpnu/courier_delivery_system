@@ -95,10 +95,15 @@ export class CourierService {
   async deleteCourier(courierId: number): Promise<{ message: string }> {
     const courier = await this.prisma.courier.findUnique({
       where: { courier_id: courierId },
+      include: { vehicle: true },
     });
 
     if (!courier) {
       throw new Error(`Courier with ID ${courierId} not found`);
+    }
+
+    if (courier?.vehicle && !courier.vehicle.is_company_owner) {
+      await this.prisma.vehicle.delete({ where: { license_plate: courier.license_plate } });
     }
 
     await this.prisma.courier.delete({

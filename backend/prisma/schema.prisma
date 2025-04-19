@@ -26,8 +26,8 @@ model User {
   last_name  String @db.VarChar(20)
 
   role    String   @db.VarChar(20)
-  Client  Client?
-  Courier Courier?
+  Client  Client?  @relation("UserClient")
+  Courier Courier? @relation("UserCourier")
 
   @@map("users")
 }
@@ -39,8 +39,8 @@ model Client {
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
 
-  user       User       @relation(fields: [user_id], references: [user_id])
-  address    Address?   @relation(fields: [address_id], references: [address_id])
+  user       User       @relation("UserClient", fields: [user_id], references: [user_id], onDelete: Cascade)
+  address    Address?   @relation(fields: [address_id], references: [address_id], onDelete: SetNull)
   deliveries Delivery[]
   feedbacks  Feedback[]
 
@@ -56,7 +56,7 @@ model Courier {
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
 
-  user       User              @relation(fields: [user_id], references: [user_id])
+  user       User              @relation("UserCourier", fields: [user_id], references: [user_id], onDelete: Cascade)
   vehicle    Vehicle           @relation(fields: [license_plate], references: [license_plate])
   schedules  CourierSchedule[]
   deliveries Delivery[]
@@ -107,7 +107,7 @@ model Warehouse {
   created_at     DateTime @default(now())
   updated_at     DateTime @updatedAt
 
-  address    Address    @relation(fields: [address_id], references: [address_id])
+  address    Address    @relation(fields: [address_id], references: [address_id], onDelete: Cascade)
   deliveries Delivery[]
 
   @@map("warehouses")
@@ -134,8 +134,8 @@ model Order {
 model Delivery {
   delivery_id      Int       @id @default(autoincrement())
   order_id         Int
-  courier_id       Int
-  client_id        Int
+  courier_id       Int?
+  client_id        Int?
   address_id       Int
   delivery_type    String    @db.VarChar(50)
   delivery_cost    Decimal   @default(0) @db.Decimal(10, 2)
@@ -148,25 +148,25 @@ model Delivery {
   created_at       DateTime  @default(now())
   updated_at       DateTime  @updatedAt
 
-  order     Order     @relation(fields: [order_id], references: [order_id])
-  courier   Courier   @relation(fields: [courier_id], references: [courier_id])
-  warehouse Warehouse @relation(fields: [warehouse_id], references: [warehouse_id])
-  Client    Client?   @relation(fields: [client_id], references: [client_id])
-  Address   Address   @relation(fields: [address_id], references: [address_id]) // нове відношення
+  order     Order     @relation(fields: [order_id], references: [order_id], onDelete: Cascade)
+  courier   Courier?  @relation(fields: [courier_id], references: [courier_id], onDelete: SetNull)
+  warehouse Warehouse @relation(fields: [warehouse_id], references: [warehouse_id], onDelete: Cascade)
+  Client    Client?   @relation(fields: [client_id], references: [client_id], onDelete: SetNull)
+  Address   Address   @relation(fields: [address_id], references: [address_id], onDelete: Cascade)
 
   @@map("deliveries")
 }
 
 model Feedback {
   feedback_id Int      @id @default(autoincrement())
-  client_id   Int
+  client_id   Int?
   courier_id  Int
   rating      Int
   comment     String   @db.VarChar(255)
   created_at  DateTime @default(now())
 
-  client  Client  @relation(fields: [client_id], references: [client_id])
-  courier Courier @relation(fields: [courier_id], references: [courier_id])
+  client  Client? @relation(fields: [client_id], references: [client_id], onDelete: SetNull)
+  courier Courier @relation(fields: [courier_id], references: [courier_id], onDelete: Cascade)
 
   @@map("feedbacks")
 }
@@ -178,7 +178,7 @@ model CourierSchedule {
   created_at      DateTime @default(now())
   updated_at      DateTime @updatedAt
 
-  courier               Courier                 @relation(fields: [courier_id], references: [courier_id])
+  courier               Courier                 @relation(fields: [courier_id], references: [courier_id], onDelete: Cascade)
   CourierWeeklySchedule CourierWeeklySchedule[]
 
   @@map("courier_schedules")
@@ -194,7 +194,7 @@ model CourierWeeklySchedule {
   created_at     DateTime  @default(now())
   updated_at     DateTime  @updatedAt
 
-  courierSchedule CourierSchedule @relation(fields: [schedule_id], references: [schedule_id])
+  courierSchedule CourierSchedule @relation(fields: [schedule_id], references: [schedule_id], onDelete: Cascade)
 
   @@unique([schedule_id, day_of_week])
   @@map("courier_weekly_schedules")
