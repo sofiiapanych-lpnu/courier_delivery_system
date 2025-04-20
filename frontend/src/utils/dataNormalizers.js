@@ -1,5 +1,7 @@
 export const normalizeOrderData = (order) => ({
-  ...order,
+  orderType: order.order_type,
+  description: order.description,
+  paymentMethod: order.payment_method,
   cost: parseFloat(order.cost),
   weight: parseFloat(order.weight),
   height: parseFloat(order.height),
@@ -8,10 +10,20 @@ export const normalizeOrderData = (order) => ({
 });
 
 export const normalizeDeliveryData = (delivery) => ({
-  ...delivery,
-  cost: parseFloat(delivery.cost),
-  desired_duration: parseFloat(delivery.desired_duration),
+  deliveryCost: delivery.cost ? parseFloat(delivery.cost) : 0,
+  desiredDuration: delivery.desired_duration ? parseFloat(delivery.desired_duration) : null,
+  orderId: delivery.order_id ?? null,
+  courierId: delivery.courier_id ?? null,
+  clientId: delivery.client_id ?? null,
+  addressId: delivery.address_id ?? null,
+  deliveryType: delivery.delivery_type || '',
+  paymentMethod: delivery.payment_method || '',
+  deliveryStatus: delivery.delivery_status || '',
+  startTime: delivery.start_time ?? null,
+  endTime: delivery.end_time ?? null,
+  warehouseId: delivery.warehouse_id ?? null,
 });
+
 
 export const normalizeUserData = (user) => ({
   userId: user.user_id,
@@ -40,4 +52,16 @@ export const normalizeVehicleData = (vehicle) => ({
   model: vehicle.model,
   transportType: vehicle.transport_type,
   isCompanyOwner: vehicle.is_company_owner,
+});
+
+export const normalizeWarehouseData = (warehouse) => ({
+  name: warehouse.name,
+  contactNumber: warehouse.contact_number,
+  addressId: warehouse.address_id
+});
+
+export const normalizeClientData = (client) => ({
+  name: warehouse.name,
+  contactNumber: warehouse.contact_number,
+  addressId: warehouse.address_id
 });

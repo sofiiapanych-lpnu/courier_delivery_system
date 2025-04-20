@@ -1,7 +1,21 @@
 const DeliveryForm = ({ selectedDelivery, setSelectedDelivery }) => {
-  const paymentMethods = ['Credit Card', 'Cash', 'Online'];
-  const deliveryTypes = ['Standard', 'Express', 'Overnight'];
-  const deliveryStatuses = ['Pending', 'In Progress', 'Delivered'];
+  const paymentMethods = [
+    { label: 'Credit Card', value: 'credit_card' },
+    { label: 'Cash', value: 'cash' },
+    { label: 'Online', value: 'online' }
+  ];
+  const deliveryTypes = [
+    { label: 'Standard', value: 'standard' },
+    { label: 'Express', value: 'express' },
+    { label: 'Overnight', value: 'overnight' }
+  ];
+
+  const deliveryStatuses = [
+    { label: 'Pending', value: 'pending' },
+    { label: 'In Progress', value: 'in_progress' },
+    { label: 'Delivered', value: 'delivered' }
+  ];
+
 
   const handleChange = (path, value) => {
     const keys = path.split('.');
@@ -73,16 +87,20 @@ const DeliveryForm = ({ selectedDelivery, setSelectedDelivery }) => {
           <label>Select Payment Method</label>
           <select
             value={selectedDelivery?.order?.payment_method || ''}
-            onChange={(e) => setSelectedDelivery({
-              ...selectedDelivery,
-              order: {
-                ...selectedDelivery?.order,
-                payment_method: e.target.value
-              }
-            })}
+            onChange={(e) =>
+              setSelectedDelivery({
+                ...selectedDelivery,
+                order: {
+                  ...selectedDelivery?.order,
+                  payment_method: e.target.value
+                }
+              })
+            }
           >
             {paymentMethods.map((method, index) => (
-              <option key={index} value={method}>{method}</option>
+              <option key={index} value={method.value}>
+                {method.label}
+              </option>
             ))}
           </select>
         </div>
@@ -93,13 +111,17 @@ const DeliveryForm = ({ selectedDelivery, setSelectedDelivery }) => {
           <label>Select Delivery Type</label>
           <select
             value={selectedDelivery?.delivery_type || ''}
-            onChange={(e) => setSelectedDelivery({
-              ...selectedDelivery,
-              delivery_type: e.target.value
-            })}
+            onChange={(e) =>
+              setSelectedDelivery({
+                ...selectedDelivery,
+                delivery_type: e.target.value
+              })
+            }
           >
             {deliveryTypes.map((type, index) => (
-              <option key={index} value={type}>{type}</option>
+              <option key={index} value={type.value}>
+                {type.label}
+              </option>
             ))}
           </select>
         </div>
@@ -107,13 +129,17 @@ const DeliveryForm = ({ selectedDelivery, setSelectedDelivery }) => {
           <label>Select Delivery Status</label>
           <select
             value={selectedDelivery?.delivery_status || ''}
-            onChange={(e) => setSelectedDelivery({
-              ...selectedDelivery,
-              delivery_status: e.target.value
-            })}
+            onChange={(e) =>
+              setSelectedDelivery({
+                ...selectedDelivery,
+                delivery_status: e.target.value
+              })
+            }
           >
             {deliveryStatuses.map((status, index) => (
-              <option key={index} value={status}>{status}</option>
+              <option key={index} value={status.value}>
+                {status.label}
+              </option>
             ))}
           </select>
         </div>
@@ -124,20 +150,23 @@ const DeliveryForm = ({ selectedDelivery, setSelectedDelivery }) => {
         </div>
         {renderInput("Desired Duration", "desired_duration", selectedDelivery?.desired_duration)}
       </div>
-
-      <div className='client'>
-        {renderInput("Client First Name", "Client.user.first_name", selectedDelivery?.Client?.user?.first_name)}
-        {renderInput("Client Last Name", "Client.user.last_name", selectedDelivery?.Client?.user?.last_name)}
-        {renderInput("Client Email", "Client.user.email", selectedDelivery?.Client?.user?.email)}
-        {renderInput("Client Phone Number", "Client.user.phone_number", selectedDelivery?.Client?.user?.phone_number)}
-      </div>
-      <div className='courier'>
-        {renderInput("Courier License Plate", "courier.license_plate", selectedDelivery?.courier?.license_plate)}
-        {renderInput("Courier First Name", "courier.user.first_name", selectedDelivery?.courier?.user?.first_name)}
-        {renderInput("Courier Last Name", "courier.user.last_name", selectedDelivery?.courier?.user?.last_name)}
-        {renderInput("Courier Email", "courier.user.email", selectedDelivery?.courier?.user?.email)}
-        {renderInput("Courier Phone Number", "courier.user.phone_number", selectedDelivery?.courier?.user?.phone_number)}
-      </div>
+      {selectedDelivery?.Client && (
+        <div className='client'>
+          {renderInput("Client First Name", "Client.user.first_name", selectedDelivery?.Client?.user?.first_name)}
+          {renderInput("Client Last Name", "Client.user.last_name", selectedDelivery?.Client?.user?.last_name)}
+          {renderInput("Client Email", "Client.user.email", selectedDelivery?.Client?.user?.email)}
+          {renderInput("Client Phone Number", "Client.user.phone_number", selectedDelivery?.Client?.user?.phone_number)}
+        </div>
+      )}
+      {selectedDelivery?.courier && (
+        <div className='courier'>
+          {renderInput("Courier License Plate", "courier.license_plate", selectedDelivery?.courier?.license_plate)}
+          {renderInput("Courier First Name", "courier.user.first_name", selectedDelivery?.courier?.user?.first_name)}
+          {renderInput("Courier Last Name", "courier.user.last_name", selectedDelivery?.courier?.user?.last_name)}
+          {renderInput("Courier Email", "courier.user.email", selectedDelivery?.courier?.user?.email)}
+          {renderInput("Courier Phone Number", "courier.user.phone_number", selectedDelivery?.courier?.user?.phone_number)}
+        </div>
+      )}
     </div>
   );
 };

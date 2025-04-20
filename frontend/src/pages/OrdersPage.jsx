@@ -32,6 +32,7 @@ const OrdersPage = () => {
     startUpdatedAt: '',
     endUpdatedAt: '',
   };
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const {
     filters,
@@ -40,7 +41,7 @@ const OrdersPage = () => {
     handleClearFilters,
   } = useFilters(initialFormState, setPage);
 
-  const { data: orders, setData: setOrders, totalPages } = useData(orderService, filters, page, limit);
+  const { data: orders, setData: setOrders, totalPages } = useData(orderService, filters, page, limit, refreshKey);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState('');
@@ -68,18 +69,14 @@ const OrdersPage = () => {
 
   const handleModalOK = async () => {
     if (modalMode === 'edit') {
-      const { order_id, client, ...cleanOrder } = selectedOrder;
-
       try {
-        if (client && client.client_id) {
-          await clientService.update(client.client_id, client);
-        }
+        console.log('selectedOrder', selectedOrder)
+        const normalizedOrder = normalizeOrderData(selectedOrder);
+        console.log('normalizedOrder', normalizedOrder)
 
-        const normalizedOrder = normalizeOrderData(cleanOrder);
+        const { data } = await orderService.update(selectedOrder.order_id, normalizedOrder);
 
-        const { data } = await orderService.update(order_id, normalizedOrder);
-
-        setOrders(prev => prev.map(o => o.order_id === order_id ? data : o));
+        setOrders(prev => prev.map(o => o.order_id === selectedOrder.order_id ? data : o));
       } catch (err) {
         console.log(err);
       } finally {
@@ -94,6 +91,8 @@ const OrdersPage = () => {
         setOrders(remaining);
         if (orders.length === 1 && page > 1) {
           setPage(prev => prev - 1);
+        } else {
+          setRefreshKey(prev => prev + 1);
         }
       } catch (err) {
         console.error(err);
@@ -289,8 +288,6 @@ const OrdersPage = () => {
 
         <button onClick={handleClearFilters}>Clear Filters</button>
       </div>
-
-
 
       <Table data={formattedOrders} columns={orderColumns} />
       <div style={{ marginTop: '20px' }}>

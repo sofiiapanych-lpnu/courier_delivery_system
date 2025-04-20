@@ -163,7 +163,16 @@ export class OrderService {
 
     return this.prisma.order.update({
       where: { order_id: id },
-      data: dto,
+      data: {
+        order_type: dto.orderType,
+        description: dto.description,
+        cost: dto.cost,
+        payment_method: dto.paymentMethod,
+        weight: dto.weight,
+        length: dto.length,
+        width: dto.width,
+        height: dto.height,
+      },
     });
   }
 

@@ -7,8 +7,9 @@ import { addressService } from '../api/addressService';
 import { clientService } from '../api/clientService'
 import { courierService } from '../api/courierService'
 import { orderService } from '../api/orderService'
+import { userService } from '../api/userService'
 import { formatDelivery } from '../utils/formatters';
-import { normalizeOrderData, normalizeDeliveryData } from '../utils/dataNormalizers'
+import { normalizeOrderData, normalizeDeliveryData, normalizeWarehouseData, normalizeAddressData, normalizeUserData } from '../utils/dataNormalizers'
 import Table from '../components/Table'
 import Modal from '../components/Modal'
 import DeliveryForm from '../components/forms/DeliveryForm';
@@ -16,6 +17,8 @@ import DeliveryForm from '../components/forms/DeliveryForm';
 const DeliveriesPage = () => {
   const [page, setPage] = useState(1);
   const limit = 5;
+  const [refreshKey, setRefreshKey] = useState(0);
+
   const initialFormState = {
     deliveryStatus: '',
     deliveryType: '',
@@ -32,7 +35,7 @@ const DeliveriesPage = () => {
     handleFilterChange,
     handleClearFilters,
   } = useFilters(initialFormState, setPage);
-  const { data: deliveries, setData: setDeliveries, totalPages } = useData(deliveryService, filters, page, limit);
+  const { data: deliveries, setData: setDeliveries, totalPages } = useData(deliveryService, filters, page, limit, refreshKey);
   const [selectedDelivery, setSelectedDelivery] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState('');
@@ -70,44 +73,46 @@ const DeliveriesPage = () => {
         ...cleanDelivery
       } = selectedDelivery;
 
-      console.log('warehouse', warehouse, 'deliveryAddress', deliveryAddress, 'delivery_id', delivery_id, 'order', order, 'client', client, 'courier', courier)
-
       try {
-        await addressService.update(warehouse.address.address_id, warehouse.address);
+        const normalizedWarehouseAddress = normalizeAddressData(warehouse.address);
+        await addressService.update(warehouse.address.address_id, normalizedWarehouseAddress);
 
-        await warehouseService.update(warehouse.warehouse_id, {
-          name: warehouse.name,
-          address_id: deliveryAddress.address_id
-        })
+        const normalizedWarehouse = normalizeWarehouseData(warehouse);
+        await warehouseService.update(warehouse.warehouse_id, normalizedWarehouse)
 
-        await addressService.update(deliveryAddress.address_id, deliveryAddress);
+        const normalizedDeliveryAddress = normalizeAddressData(deliveryAddress);
+        await addressService.update(deliveryAddress.address_id, normalizedDeliveryAddress);
 
         if (order && order.order_id) {
-          console.log('Updating order:', order);
           const normalizedOrder = normalizeOrderData(order);
           await orderService.update(order.order_id, normalizedOrder);
-
         }
 
         if (client && client.client_id) {
-          await clientService.update(client.client_id, client);
+          console.log('client', client)
+          const normalizedClient = normalizeUserData(client.user);
+          //await clientService.update(client.client_id, client);
+          await userService.update(normalizedClient.userId, normalizedClient)
+        } else {
+          console.log('client is deleted') //якось норм обробити
         }
 
         if (courier && courier.courier_id) {
-          await courierService.update(courier.courier_id, courier);
+          const normalizedCourier = normalizeUserData(courier.user);
+          await userService.update(normalizedCourier.userId, normalizedCourier);
         }
 
         const deliveryPayload = {
           ...cleanDelivery,
-          warehouse_id: warehouse.warehouse_id,
-          address_id: Address?.address_id,
-          client_id: client.client_id,
-          courier_id: courier.courier_id,
+          warehouse_id: warehouse?.warehouse_id,
+          address_id: deliveryAddress?.address_id,
+          client_id: client?.client_id,
+          courier_id: courier?.courier_id,
           order_id: order.order_id,
         };
 
         const normalizedDelivery = normalizeDeliveryData(deliveryPayload);
-
+        console.log(normalizedDelivery)
         const { data } = await deliveryService.update(delivery_id, normalizedDelivery);
 
         setDeliveries(prev => prev.map(d => d.delivery_id === delivery_id ? data : d));
@@ -125,6 +130,8 @@ const DeliveriesPage = () => {
         setDeliveries(remaining);
         if (deliveries.length === 1 && page > 1) {
           setPage(prev => prev - 1);
+        } else {
+          setRefreshKey(prev => prev + 1);
         }
       } catch (err) {
         console.error(err);
@@ -133,7 +140,6 @@ const DeliveriesPage = () => {
       }
     }
   };
-  console.log(deliveries)
   console.log('selectedDelivery', selectedDelivery)
 
   const formattedDeliveries = deliveries.map(formatDelivery);

@@ -16,6 +16,8 @@ import { courierService } from '../api/courierService';
 const UsersPage = () => {
   const [page, setPage] = useState(1);
   const limit = 5;
+  const [refreshKey, setRefreshKey] = useState(0);
+
   const initialFormState = {
     name: '',
     email: '',
@@ -35,7 +37,7 @@ const UsersPage = () => {
     handleClearFilters,
   } = useFilters(initialFormState, setPage);
 
-  const { data: users, setData: setUsers, totalPages } = useData(userService, filters, page, limit);
+  const { data: users, setData: setUsers, totalPages } = useData(userService, filters, page, limit, refreshKey);
   const [selectedUser, setSelectedUser] = useState(null);
   const [originalLicensePlate, setOriginalLicensePlate] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
@@ -143,6 +145,8 @@ const UsersPage = () => {
 
         if (updatedUsers.length === 0 && page > 1) {
           setPage(prev => prev - 1);
+        } else {
+          setRefreshKey(prev => prev + 1);
         }
       } catch (err) {
         console.error(err);
