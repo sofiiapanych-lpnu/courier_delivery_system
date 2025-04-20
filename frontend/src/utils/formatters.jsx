@@ -69,6 +69,31 @@ export const formatDelivery = (delivery) => ({
   courier: formatPerson(delivery.courier),
 });
 
+export const formatSchedule = (schedule) => {
+  const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const weeklySchedule = schedule.CourierWeeklySchedule;
+
+  const timeOptions = {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  };
+
+  const scheduleDays = days.reduce((acc, day, index) => {
+    const daySchedule = weeklySchedule.find(s => s.day_of_week === index + 1);
+    if (daySchedule && daySchedule.start_time && daySchedule.end_time) {
+      acc[day] = `${new Date(daySchedule.start_time).toLocaleTimeString([], timeOptions)} - ${new Date(daySchedule.end_time).toLocaleTimeString([], timeOptions)}`;
+    } else {
+      acc[day] = 'No Schedule';
+    }
+    return acc;
+  }, {});
+
+  scheduleDays.courier = formatUserFullName(schedule.courier.user);
+
+  return scheduleDays;
+};
+
 export const formatOrder = (order) => ({
   ...order,
   payment_method: formatPaymentMethod(order.payment_method),

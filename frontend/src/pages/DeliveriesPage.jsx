@@ -201,6 +201,13 @@ const DeliveriesPage = () => {
 
         <button onClick={handleClearFilters}>Clear Filters</button>
       </div>
+      <button onClick={() => {
+        setSelectedDelivery(null);
+        setModalMode('create');
+        setModalOpen(true);
+      }}>
+        Create Delivery
+      </button>
 
       <Table data={formattedDeliveries} columns={deliveryColumns} />
       <div style={{ marginTop: '20px' }}>

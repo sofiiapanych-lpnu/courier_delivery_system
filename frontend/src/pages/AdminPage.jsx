@@ -10,6 +10,7 @@ const AdminPage = () => {
           <li><Link to="deliveries">Deliveries</Link></li>
           <li><Link to="users">Users</Link></li>
           <li><Link to="orders">Orders</Link></li>
+          <li><Link to="courier-schedules">Courier schedules</Link></li>
         </ul>
       </nav>
 

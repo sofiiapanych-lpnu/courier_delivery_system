@@ -18,15 +18,45 @@ export class CourierScheduleController {
     @Query('scheduleStatus') scheduleStatus?: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
+    @Query('mondayStart') mondayStart?: string,
+    @Query('mondayEnd') mondayEnd?: string,
+    @Query('tuesdayStart') tuesdayStart?: string,
+    @Query('tuesdayEnd') tuesdayEnd?: string,
+    @Query('wednesdayStart') wednesdayStart?: string,
+    @Query('wednesdayEnd') wednesdayEnd?: string,
+    @Query('thursdayStart') thursdayStart?: string,
+    @Query('thursdayEnd') thursdayEnd?: string,
+    @Query('fridayStart') fridayStart?: string,
+    @Query('fridayEnd') fridayEnd?: string,
+    @Query('saturdayStart') saturdayStart?: string,
+    @Query('saturdayEnd') saturdayEnd?: string,
+    @Query('sundayStart') sundayStart?: string,
+    @Query('sundayEnd') sundayEnd?: string,
   ) {
     const query = {
       courierId: courierId ? parseInt(courierId, 10) : undefined,
       scheduleStatus,
       page: page ? parseInt(page, 10) : undefined,
       limit: limit ? parseInt(limit, 10) : undefined,
+      mondayStart,
+      mondayEnd,
+      tuesdayStart,
+      tuesdayEnd,
+      wednesdayStart,
+      wednesdayEnd,
+      thursdayStart,
+      thursdayEnd,
+      fridayStart,
+      fridayEnd,
+      saturdayStart,
+      saturdayEnd,
+      sundayStart,
+      sundayEnd,
     };
+
     return this.courierScheduleService.getAllCourierSchedule(query);
   }
+
 
   @Get(':id')
   getCourierScheduleById(@Param('id') id: string) {

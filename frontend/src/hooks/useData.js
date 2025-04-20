@@ -13,5 +13,6 @@ export const useData = (service, filters, page, limit, refreshKey) => {
       })
       .catch(console.error);
   }, [filters, page, service, limit, refreshKey]);
+  console.log('filters', filters)
   return { data, setData, totalPages };
 };

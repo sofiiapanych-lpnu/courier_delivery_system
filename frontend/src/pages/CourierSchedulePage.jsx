@@ -1,0 +1,226 @@
+import React, { useState } from 'react';
+import { useData } from '../hooks/useData';
+import { useFilters } from '../hooks/useFilters';
+import { courierScheduleService } from '../api/courierScheduleService';
+import { formatSchedule } from '../utils/formatters'
+import Table from '../components/Table';
+import Modal from '../components/Modal';
+//import CourierScheduleForm from '../components/forms/CourierScheduleForm';
+
+const CourierSchedulePage = () => {
+  const [page, setPage] = useState(1);
+  const limit = 5;
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalMode, setModalMode] = useState('');
+  const [selectedSchedule, setSelectedSchedule] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const initialFormState = {
+    courierId: '',
+    scheduleStatus: '',
+    mondayHours: '',
+    mondayStart: '',
+    mondayEnd: '',
+    tuesdayHours: '',
+    tuesdayStart: '',
+    tuesdayEnd: '',
+    wednesdayHours: '',
+    wednesdayStart: '',
+    wednesdayEnd: '',
+    thursdayHours: '',
+    thursdayStart: '',
+    thursdayEnd: '',
+    fridayHours: '',
+    fridayStart: '',
+    fridayEnd: '',
+    saturdayHours: '',
+    saturdayStart: '',
+    saturdayEnd: '',
+    sundayHours: '',
+    sundayStart: '',
+    sundayEnd: '',
+  };
+
+  const {
+    filters,
+    formState,
+    handleFilterChange,
+    handleClearFilters,
+  } = useFilters(initialFormState, setPage);
+
+  const { data: schedules, setData: setSchedules, totalPages } = useData(courierScheduleService, filters, page, limit, refreshKey);
+
+  const handleEditSchedule = (id) => {
+    courierScheduleService.getById(id)
+      .then(res => {
+        setSelectedSchedule(res.data);
+        setModalMode('edit');
+        setModalOpen(true);
+      });
+  };
+
+  const handleDeleteSchedule = (id) => {
+    setSelectedSchedule(id);
+    setModalMode('delete');
+    setModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setModalOpen(false);
+    setSelectedSchedule(null);
+  };
+
+  const handleModalOK = async () => {
+    if (modalMode === 'edit') {
+      try {
+        const { data } = await courierScheduleService.update(
+          selectedSchedule.schedule_id,
+          selectedSchedule
+        );
+        setSchedules(prev =>
+          prev.map(s =>
+            s.schedule_id === selectedSchedule.schedule_id ? data : s
+          )
+        );
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setModalOpen(false);
+      }
+    }
+
+    if (modalMode === 'delete') {
+      try {
+        await courierScheduleService.delete(selectedSchedule);
+        setSchedules(prev =>
+          prev.filter(s => s.schedule_id !== selectedSchedule)
+        );
+        if (schedules.length === 1 && page > 1) setPage(p => p - 1);
+        else setRefreshKey(k => k + 1);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setModalOpen(false);
+      }
+    }
+  };
+
+  const columns = [
+    { header: 'Courier', accessor: 'courier' },
+    { header: 'Status', accessor: 'schedule_status' },
+    { header: 'Monday', accessor: 'monday' },
+    { header: 'Tuesday', accessor: 'tuesday' },
+    { header: 'Wednesday', accessor: 'wednesday' },
+    { header: 'Thursday', accessor: 'thursday' },
+    { header: 'Friday', accessor: 'friday' },
+    { header: 'Saturday', accessor: 'saturday' },
+    { header: 'Sunday', accessor: 'sunday' },
+    // { header: 'Created At', accessor: 'created_at' },
+    // { header: 'Updated At', accessor: 'updated_at' },
+    {
+      header: 'Actions',
+      accessor: 'actions',
+      cell: ({ row }) => (
+        <>
+          <button onClick={() => handleEditSchedule(row.schedule_id)}>Edit</button>
+          <button onClick={() => handleDeleteSchedule(row.schedule_id)} style={{ marginLeft: '10px' }}>Delete</button>
+        </>
+      )
+    }
+  ];
+
+  console.log(schedules)
+
+  const scheduleData = schedules.map(schedule => {
+    const formattedSchedule = formatSchedule(schedule);
+    return {
+      ...schedule,
+      courier: formattedSchedule.courier,
+      monday: formattedSchedule.Monday,
+      tuesday: formattedSchedule.Tuesday,
+      wednesday: formattedSchedule.Wednesday,
+      thursday: formattedSchedule.Thursday,
+      friday: formattedSchedule.Friday,
+      saturday: formattedSchedule.Saturday,
+      sunday: formattedSchedule.Sunday,
+    };
+  });
+
+  return (
+    <div>
+      <h1>Courier Schedules</h1>
+
+      <div className="filters">
+        <input
+          name="courierId"
+          onChange={handleFilterChange}
+          value={formState.courierId}
+          placeholder="Courier ID"
+        />
+        <input
+          name="scheduleStatus"
+          onChange={handleFilterChange}
+          value={formState.scheduleStatus}
+          placeholder="Schedule Status"
+        />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginTop: '10px' }}>
+          {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map(day => (
+            <div key={day}>
+              <strong>{day.charAt(0).toUpperCase() + day.slice(1)}</strong>
+              <input
+                name={`${day}Start`}
+                onChange={handleFilterChange}
+                value={formState[`${day}Start`]}
+                placeholder="Start Time (e.g. 08:00)"
+                type="time"
+              />
+              <input
+                name={`${day}End`}
+                onChange={handleFilterChange}
+                value={formState[`${day}End`]}
+                placeholder="End Time (e.g. 17:00)"
+                type="time"
+              />
+            </div>
+          ))}
+        </div>
+
+        <button onClick={handleClearFilters}>Clear Filters</button>
+      </div>
+
+      <Table data={scheduleData} columns={columns} />
+
+      <div style={{ marginTop: '20px' }}>
+        <button
+          onClick={() => setPage(prev => Math.max(prev - 1, 1))}
+          disabled={page === 1}
+        >
+          Prev
+        </button>
+        <span style={{ margin: '0 10px' }}>Page {page} of {totalPages}</span>
+        <button
+          onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
+          disabled={page === totalPages}
+        >
+          Next
+        </button>
+      </div>
+
+      {modalOpen && (
+        <Modal open={modalOpen} onClose={handleModalClose} onOK={handleModalOK}>
+          {modalMode === 'edit' ? (
+            // <CourierScheduleForm selectedSchedule={selectedSchedule} setSelectedSchedule={setSelectedSchedule} />
+            <></>
+          ) : (
+            <div>
+              <h2>Confirm Deletion</h2>
+              <p>Are you sure you want to delete this schedule?</p>
+            </div>
+          )}
+        </Modal>
+      )}
+    </div>
+  );
+};
+
+export default CourierSchedulePage;
