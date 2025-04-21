@@ -57,11 +57,33 @@ export const normalizeVehicleData = (vehicle) => ({
 export const normalizeWarehouseData = (warehouse) => ({
   name: warehouse.name,
   contactNumber: warehouse.contact_number,
-  addressId: warehouse.address_id
+  addressId: warehouse.address?.address_id,
+  // address: warehouse.address ? {
+  //   country: warehouse.address.country,
+  //   city: warehouse.address.city,
+  //   street_name: warehouse.address.street_name,
+  //   building_number: warehouse.address.building_number,
+  //   apartment_number: warehouse.address.apartment_number
+  // } : null,
 });
 
-export const normalizeClientData = (client) => ({
-  name: warehouse.name,
-  contactNumber: warehouse.contact_number,
-  addressId: warehouse.address_id
+export const normalizeCourierWeeklyScheduleData = (selectedSchedule, ws) => ({
+  scheduleId: ws.schedule_id ? parseInt(ws.schedule_id, 10) : null,
+  dayOfWeek: ws.day_of_week,
+  startTime: ws.start_time && !isNaN(new Date(ws.start_time).getTime()) ? new Date(ws.start_time) : null,
+  endTime: ws.end_time && !isNaN(new Date(ws.end_time).getTime()) ? new Date(ws.end_time) : null,
+  isWorkingDay: ws.is_working_day
+});
+
+export const normalizeCourierScheduleData = (s) => ({
+  courierId: parseInt(s.courier_id, 10),
+  scheduleStatus: s.schedule_status,
+  weeklySchedule: s.CourierWeeklySchedule.map(ws =>
+    normalizeCourierWeeklyScheduleData(s, ws)
+  )
+});
+
+export const normalizeCourierData = (courier) => ({
+  licensePlate: courier.license_plate,
+  vehicle: courier.vehicle ? normalizeVehicleData(courier.vehicle) : null,
 });

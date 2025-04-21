@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { useData } from '../hooks/useData';
 import { useFilters } from '../hooks/useFilters';
 import { courierScheduleService } from '../api/courierScheduleService';
+import { courierWeeklyScheduleService } from '../api/courierWeeklyScheduleService'
 import { formatSchedule } from '../utils/formatters'
+import { normalizeCourierWeeklyScheduleData, normalizeCourierScheduleData } from '../utils/dataNormalizers'
 import Table from '../components/Table';
 import Modal from '../components/Modal';
-//import CourierScheduleForm from '../components/forms/CourierScheduleForm';
+import CourierScheduleForm from '../components/forms/CourierScheduleForm';
 
 const CourierSchedulePage = () => {
   const [page, setPage] = useState(1);
@@ -16,7 +18,7 @@ const CourierSchedulePage = () => {
   const [refreshKey, setRefreshKey] = useState(0);
 
   const initialFormState = {
-    courierId: '',
+    courierName: '',
     scheduleStatus: '',
     mondayHours: '',
     mondayStart: '',
@@ -73,15 +75,30 @@ const CourierSchedulePage = () => {
   const handleModalOK = async () => {
     if (modalMode === 'edit') {
       try {
+        const modifiedWeekly = selectedSchedule.CourierWeeklySchedule.filter(ws => ws.isModified);
+
+        await Promise.all(
+          modifiedWeekly.map(ws =>
+            ws.weekly_id
+              ? courierWeeklyScheduleService.update(ws.weekly_id, normalizeCourierWeeklyScheduleData(selectedSchedule, ws))
+              : courierWeeklyScheduleService.create(normalizeCourierWeeklyScheduleData(selectedSchedule, ws))
+          )
+        );
+
+        const normalizedSchedule = normalizeCourierScheduleData(selectedSchedule)
+
         const { data } = await courierScheduleService.update(
           selectedSchedule.schedule_id,
-          selectedSchedule
+          normalizedSchedule
         );
+
         setSchedules(prev =>
           prev.map(s =>
             s.schedule_id === selectedSchedule.schedule_id ? data : s
           )
         );
+        setRefreshKey(prevKey => prevKey + 1);
+
       } catch (e) {
         console.error(e);
       } finally {
@@ -103,6 +120,71 @@ const CourierSchedulePage = () => {
         setModalOpen(false);
       }
     }
+
+    if (modalMode === 'create') {
+      console.log('selectedSchedule', selectedSchedule)
+
+      try {
+        // const normalizedSchedule_ = normalizeCourierScheduleData(selectedSchedule);
+        // console.log('normalizedSchedule_', normalizedSchedule_)
+        // const { data: createdSchedule_ } = await courierScheduleService.create(normalizedSchedule_);
+
+        // console.log('createdSchedule_', createdSchedule_)
+
+        // const weeklyScheduleResponses = await Promise.all(
+        //   selectedSchedule.CourierWeeklySchedule.map(ws =>
+        //     courierWeeklyScheduleService.create(
+        //       normalizeCourierWeeklyScheduleData(
+        //         { ...selectedSchedule, schedule_id: createdSchedule_.schedule_id },
+        //         ws
+        //       )
+        //     )
+        //   )
+        // );
+
+        // console.log('weeklyScheduleResponses', weeklyScheduleResponses)
+
+        // const createdWeekly = weeklyScheduleResponses.map(res => res.data);
+
+        // const newSchedule = {
+        //   ...selectedSchedule,
+        //   CourierWeeklySchedule: createdWeekly
+        // };
+
+        const normalizedSchedule = normalizeCourierScheduleData(selectedSchedule);
+        console.log(normalizedSchedule)
+
+        const { data: createdSchedule } = await courierScheduleService.create(normalizedSchedule);
+        console.log('createdSchedule', createdSchedule)
+
+        // const weeklyScheduleResponses = await Promise.all(
+        //   selectedSchedule.CourierWeeklySchedule.map(ws =>
+        //     courierWeeklyScheduleService.create(
+        //       normalizeCourierWeeklyScheduleData(
+        //         { ...selectedSchedule, schedule_id: createdSchedule.schedule_id },
+        //         ws
+        //       )
+        //     )
+        //   )
+        // );
+        // console.log('weeklyScheduleResponses', weeklyScheduleResponses)
+
+        // const createdWeekly = weeklyScheduleResponses.map(res => res.data);
+
+        // const newSchedule = {
+        //   ...createdSchedule,
+        //   CourierWeeklySchedule: createdWeekly
+        // };
+
+        // setSchedules(prev => [...prev, newSchedule]);
+        setRefreshKey(prev => prev + 1);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setModalOpen(false);
+      }
+    }
+
   };
 
   const columns = [
@@ -152,17 +234,21 @@ const CourierSchedulePage = () => {
 
       <div className="filters">
         <input
-          name="courierId"
+          name="courierName"
           onChange={handleFilterChange}
-          value={formState.courierId}
-          placeholder="Courier ID"
+          value={formState.courierName}
+          placeholder="Courier name or surname"
         />
-        <input
+        <select
           name="scheduleStatus"
           onChange={handleFilterChange}
           value={formState.scheduleStatus}
-          placeholder="Schedule Status"
-        />
+        >
+          <option value="">All statuses</option>
+          <option value="active">Active</option>
+          <option value="archived">Archived</option>
+        </select>
+
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginTop: '10px' }}>
           {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map(day => (
             <div key={day}>
@@ -171,14 +257,12 @@ const CourierSchedulePage = () => {
                 name={`${day}Start`}
                 onChange={handleFilterChange}
                 value={formState[`${day}Start`]}
-                placeholder="Start Time (e.g. 08:00)"
                 type="time"
               />
               <input
                 name={`${day}End`}
                 onChange={handleFilterChange}
                 value={formState[`${day}End`]}
-                placeholder="End Time (e.g. 17:00)"
                 type="time"
               />
             </div>
@@ -187,6 +271,30 @@ const CourierSchedulePage = () => {
 
         <button onClick={handleClearFilters}>Clear Filters</button>
       </div>
+
+      <button
+        style={{ marginBottom: '10px' }}
+        onClick={() => {
+          const defaultWeekSchedule = Array.from({ length: 7 }, (_, i) => ({
+            day_of_week: i + 1,
+            is_working_day: false,
+            start_time: '',
+            end_time: '',
+          }));
+
+          setSelectedSchedule({
+            courier_id: '',
+            courier: undefined,
+            schedule_status: 'active',
+            CourierWeeklySchedule: defaultWeekSchedule,
+          });
+
+          setModalMode('create');
+          setModalOpen(true);
+        }}
+      >
+        Create Schedule
+      </button>
 
       <Table data={scheduleData} columns={columns} />
 
@@ -208,9 +316,8 @@ const CourierSchedulePage = () => {
 
       {modalOpen && (
         <Modal open={modalOpen} onClose={handleModalClose} onOK={handleModalOK}>
-          {modalMode === 'edit' ? (
-            // <CourierScheduleForm selectedSchedule={selectedSchedule} setSelectedSchedule={setSelectedSchedule} />
-            <></>
+          {modalMode === 'edit' || modalMode === 'create' ? (
+            <CourierScheduleForm selectedSchedule={selectedSchedule} setSelectedSchedule={setSelectedSchedule} mode={modalMode} />
           ) : (
             <div>
               <h2>Confirm Deletion</h2>

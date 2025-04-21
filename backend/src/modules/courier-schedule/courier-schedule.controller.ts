@@ -9,12 +9,13 @@ export class CourierScheduleController {
 
   @Post()
   createCourierSchedule(@Body() createCourierScheduleDto: CreateCourierScheduleDto) {
+    console.log('createCourierScheduleDto', createCourierScheduleDto)
     return this.courierScheduleService.createCourierSchedule(createCourierScheduleDto);
   }
 
   @Get()
   getAllCourierSchedule(
-    @Query('courierId') courierId?: string,
+    @Query('courierName') courierName?: string,
     @Query('scheduleStatus') scheduleStatus?: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
@@ -34,7 +35,7 @@ export class CourierScheduleController {
     @Query('sundayEnd') sundayEnd?: string,
   ) {
     const query = {
-      courierId: courierId ? parseInt(courierId, 10) : undefined,
+      courierName,
       scheduleStatus,
       page: page ? parseInt(page, 10) : undefined,
       limit: limit ? parseInt(limit, 10) : undefined,

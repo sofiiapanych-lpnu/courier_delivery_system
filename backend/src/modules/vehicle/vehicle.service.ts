@@ -27,26 +27,75 @@ export class VehicleService {
     isCompanyOwner?: boolean;
     page?: number;
     limit?: number;
-  }): Promise<Vehicle[]> {
-    const { licensePlate, model, transportType, isCompanyOwner, page = 1, limit = 10 } = query;
+  }): Promise<{
+    items: Vehicle[];
+    meta: {
+      totalItems: number;
+      totalPages: number;
+      currentPage: number;
+    };
+  }> {
+    const {
+      licensePlate,
+      model,
+      transportType,
+      isCompanyOwner,
+      page = 1,
+      limit = 10,
+    } = query;
+
     const skip = (page - 1) * limit;
-    return this.prisma.vehicle.findMany({
-      where: {
-        AND: [
-          licensePlate ? { license_plate: { contains: licensePlate, mode: 'insensitive' } } : {},
-          model ? { model: { contains: model, mode: 'insensitive' } } : {},
-          transportType ? { transport_type: { contains: transportType, mode: 'insensitive' } } : {},
-          isCompanyOwner !== undefined ? { is_company_owner: isCompanyOwner } : {},
-        ]
+
+    const whereClause: Prisma.VehicleWhereInput = {
+      AND: [
+        licensePlate ? { license_plate: { contains: licensePlate, mode: 'insensitive' } } : {},
+        model ? { model: { contains: model, mode: 'insensitive' } } : {},
+        transportType ? { transport_type: { contains: transportType, mode: 'insensitive' } } : {},
+        isCompanyOwner !== undefined ? { is_company_owner: isCompanyOwner } : {},
+      ]
+    };
+
+    const [vehicles, total] = await Promise.all([
+      this.prisma.vehicle.findMany({
+        where: whereClause,
+        skip,
+        take: limit,
+        include: {
+          Courier: {
+            include: {
+              user: true,
+            }
+          }
+        }
+      }),
+      this.prisma.vehicle.count({
+        where: whereClause,
+      }),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      items: vehicles,
+      meta: {
+        totalItems: total,
+        totalPages,
+        currentPage: page,
       },
-      skip,
-      take: limit,
-    });
+    };
   }
+
 
   async getVehicleById(licensePlate: string): Promise<Vehicle> {
     const vehicle = await this.prisma.vehicle.findUnique({
       where: { license_plate: licensePlate },
+      include: {
+        Courier: {
+          include: {
+            user: true,
+          }
+        }
+      }
     });
 
     if (!vehicle) {

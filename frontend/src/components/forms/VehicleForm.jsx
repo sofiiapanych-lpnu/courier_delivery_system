@@ -1,71 +1,91 @@
-import React, { useState } from "react";
+import React, { useEffect } from 'react';
 
-const VehicleForm = ({ vehicle = {}, onUpdate }) => {
-  const [formData, setFormData] = useState({
-    license_plate: vehicle.license_plate || '',
-    model: vehicle.model || '',
-    transport_type: vehicle.transport_type || '',
-    owned_by_company: vehicle.owned_by_company || '',
-  });
+const VehicleForm = ({ selectedVehicle, setSelectedVehicle, mode = 'edit' }) => {
+  const transportTypes = [
+    { label: 'Car', value: 'car' },
+    { label: 'Truck', value: 'truck' },
+    { label: 'Motorcycle', value: 'motorcycle' },
+  ];
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    const newValue = type === 'checkbox' ? checked : value;
+  useEffect(() => {
+    if (mode === 'create' && !selectedVehicle?.hasOwnProperty('is_company_owner')) {
+      setSelectedVehicle(prev => ({
+        ...prev,
+        is_company_owner: true,
+      }));
+    }
+  }, [mode, selectedVehicle, setSelectedVehicle]);
 
-    setFormData(prev => ({ ...prev, [name]: newValue }));
+  const handleChange = (path, value) => {
+    const keys = path.split('.');
+    const updatedVehicle = { ...selectedVehicle };
+    let current = updatedVehicle;
+
+    keys.forEach((key, index) => {
+      if (index === keys.length - 1) {
+        current[key] = value;
+      } else {
+        if (!current[key]) {
+          current[key] = {};
+        }
+        current = current[key];
+      }
+    });
+
+    setSelectedVehicle(updatedVehicle);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onUpdate(formData);
-    console.log(formData)
+  const renderInput = (label, path, value) => (
+    <div className='input-field'>
+      <label>{label}</label>
+      <input
+        type="text"
+        value={value || ''}
+        onChange={(e) => handleChange(path, e.target.value)}
+      />
+    </div>
+  );
 
-  };
+  const renderSelect = (label, path, value, options) => (
+    <div className='input-field'>
+      <label>{label}</label>
+      <select
+        value={value || ''}
+        onChange={(e) => handleChange(path, e.target.value)}
+      >
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+
+  const renderCheckbox = (label, path, value) => (
+    <div className='input-field'>
+      <label>
+        <input
+          type="checkbox"
+          checked={!!value}
+          onChange={(e) => handleChange(path, e.target.checked)}
+        />
+        {label}
+      </label>
+    </div>
+  );
 
   return (
     <div>
-      <h2>Update Vehicle</h2>
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>License Plate</label>
-          <input
-            type="text"
-            name="license_plate"
-            value={formData.license_plate}
-            onChange={handleChange}
-          />
-        </div>
-        <div>
-          <label>Model</label>
-          <input
-            type="text"
-            name="model"
-            value={formData.model}
-            onChange={handleChange}
-          />
-        </div>
-        <div>
-          <label>Transport Type</label>
-          <input
-            type="text"
-            name="transport_type"
-            value={formData.transport_type}
-            onChange={handleChange}
-          />
-        </div>
-        <div>
-          <label>
-            <input
-              type="checkbox"
-              name="owned_by_company"
-              checked={formData.owned_by_company}
-              onChange={handleChange}
-            />
-            Owned by company
-          </label>
-        </div>
-        <button type="submit">Update Vehicle</button>
-      </form>
+      <h2>Edit Vehicle</h2>
+      <div className='vehicle'>
+        {renderInput("License Plate", "license_plate", selectedVehicle?.license_plate)}
+        {renderInput("Model", "model", selectedVehicle?.model)}
+        {renderSelect("Transport Type", "transport_type", selectedVehicle?.transport_type, transportTypes)}
+        {mode === 'edit' &&
+          renderCheckbox("Owned by Company", "is_company_owner", selectedVehicle?.is_company_owner)}
+
+      </div>
     </div>
   );
 };

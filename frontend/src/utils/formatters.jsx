@@ -70,29 +70,31 @@ export const formatDelivery = (delivery) => ({
 });
 
 export const formatSchedule = (schedule) => {
-  const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-  const weeklySchedule = schedule.CourierWeeklySchedule;
+  const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  const weeklySchedule = schedule?.CourierWeeklySchedule ?? [];
 
   const timeOptions = {
     hour: '2-digit',
     minute: '2-digit',
-    hour12: false
+    hour12: false,
+    timeZone: 'UTC'
   };
 
   const scheduleDays = days.reduce((acc, day, index) => {
     const daySchedule = weeklySchedule.find(s => s.day_of_week === index + 1);
     if (daySchedule && daySchedule.start_time && daySchedule.end_time) {
-      acc[day] = `${new Date(daySchedule.start_time).toLocaleTimeString([], timeOptions)} - ${new Date(daySchedule.end_time).toLocaleTimeString([], timeOptions)}`;
+      acc[day] = `${new Date(daySchedule.start_time).toLocaleTimeString('en-GB', timeOptions)} - ${new Date(daySchedule.end_time).toLocaleTimeString('en-GB', timeOptions)}`;
     } else {
       acc[day] = 'No Schedule';
     }
     return acc;
   }, {});
 
-  scheduleDays.courier = formatUserFullName(schedule.courier.user);
+  scheduleDays.courier = formatUserFullName(schedule?.courier?.user);
 
   return scheduleDays;
 };
+
 
 export const formatOrder = (order) => ({
   ...order,
@@ -108,4 +110,11 @@ export const formatUsers = (user) => ({
   vehicle: formatVehicle(user.Courier?.vehicle),
   created_at: formatDate(user.created_at),
   updated_at: formatDate(user.updated_at),
+})
+
+export const formatWarehouse = (warehouse) => ({
+  ...warehouse,
+  name: warehouse.name,
+  address: formatAddress(warehouse?.address),
+
 })

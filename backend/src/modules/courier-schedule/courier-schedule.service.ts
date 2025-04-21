@@ -9,16 +9,41 @@ export class CourierScheduleService {
   constructor(private prisma: PrismaService) { }
 
   async createCourierSchedule(dto: CreateCourierScheduleDto): Promise<CourierSchedule> {
-    return await this.prisma.courierSchedule.create({
-      data: {
-        courier_id: dto.courierId,
-        schedule_status: dto.scheduleStatus,
-      },
+    return await this.prisma.$transaction(async (tx) => {
+      const schedule = await tx.courierSchedule.create({
+        data: {
+          courier_id: dto.courierId,
+          schedule_status: dto.scheduleStatus,
+        },
+      });
+
+      // Створюємо мапу з переданих днів для легкого доступу
+      const providedDaysMap = new Map(
+        (dto.weeklySchedule ?? []).map(ws => [ws.dayOfWeek, ws])
+      );
+
+      const weeklySchedules = Array.from({ length: 7 }, (_, index) => {
+        const ws = providedDaysMap.get(index);
+        return {
+          schedule_id: schedule.schedule_id,
+          day_of_week: index,
+          is_working_day: ws?.isWorkingDay ?? false,
+          start_time: ws?.startTime ?? null,
+          end_time: ws?.endTime ?? null,
+        };
+      });
+
+      await tx.courierWeeklySchedule.createMany({
+        data: weeklySchedules,
+      });
+
+      return schedule;
     });
   }
 
+
   async getAllCourierSchedule(query: {
-    courierId?: number;
+    courierName?: string;
     scheduleStatus?: string;
     mondayStart?: string;
     mondayEnd?: string;
@@ -45,7 +70,7 @@ export class CourierScheduleService {
     };
   }> {
     const {
-      courierId,
+      courierName,
       scheduleStatus,
       mondayStart, mondayEnd,
       tuesdayStart, tuesdayEnd,
@@ -85,11 +110,52 @@ export class CourierScheduleService {
       return [];
     });
 
+    const courierNameCondition: Prisma.CourierScheduleWhereInput = courierName
+      ? {
+        courier: {
+          user: {
+            OR: [
+              {
+                first_name: {
+                  contains: query.courierName,
+                  mode: Prisma.QueryMode.insensitive,
+                },
+              },
+              {
+                last_name: {
+                  contains: query.courierName,
+                  mode: Prisma.QueryMode.insensitive,
+                },
+              },
+              ...(courierName.split(' ').length === 2
+                ? [{
+                  AND: [
+                    {
+                      first_name: {
+                        contains: courierName.split(' ')[0],
+                        mode: Prisma.QueryMode.insensitive,
+                      },
+                    },
+                    {
+                      last_name: {
+                        contains: courierName.split(' ')[1],
+                        mode: Prisma.QueryMode.insensitive,
+                      },
+                    },
+                  ]
+                }]
+                : [])
+            ]
+          }
+        }
+      }
+      : {};
+
     const whereClause: Prisma.CourierScheduleWhereInput = {
       AND: [
-        courierId !== undefined ? { courier_id: courierId } : {},
         scheduleStatus ? { schedule_status: { contains: scheduleStatus, mode: 'insensitive' } } : {},
         ...dayConditions,
+        courierNameCondition,
       ]
     };
 
@@ -105,7 +171,15 @@ export class CourierScheduleService {
               user: true,
             }
           }
-        }
+        },
+        orderBy: [
+          {
+            schedule_status: 'asc',
+          },
+          {
+            created_at: 'desc',
+          }
+        ],
       }),
       this.prisma.courierSchedule.count({
         where: whereClause,
@@ -124,11 +198,17 @@ export class CourierScheduleService {
     };
   }
 
-
-
   async getCourierScheduleById(id: number): Promise<CourierSchedule> {
     const courierSchedule = await this.prisma.courierSchedule.findUnique({
       where: { schedule_id: id },
+      include: {
+        CourierWeeklySchedule: true,
+        courier: {
+          include: {
+            user: true,
+          }
+        }
+      }
     });
     if (!courierSchedule) {
       throw new NotFoundException(`Schedule with ID ${id} not found`);
@@ -151,6 +231,14 @@ export class CourierScheduleService {
         courier_id: dto.courierId,
         schedule_status: dto.scheduleStatus,
       },
+      include: {
+        CourierWeeklySchedule: true,
+        courier: {
+          include: {
+            user: true,
+          }
+        }
+      }
     });
   }
 

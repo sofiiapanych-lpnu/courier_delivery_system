@@ -11,6 +11,8 @@ const AdminPage = () => {
           <li><Link to="users">Users</Link></li>
           <li><Link to="orders">Orders</Link></li>
           <li><Link to="courier-schedules">Courier schedules</Link></li>
+          <li><Link to="warehouses">Warehouses</Link></li>
+          <li><Link to="vehicles">Vehicles</Link></li>
         </ul>
       </nav>
 

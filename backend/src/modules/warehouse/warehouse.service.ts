@@ -21,31 +21,70 @@ export class WarehouseService {
   async getAllWarehouse(query: {
     name?: string;
     contactNumber?: string;
+    address?: string;
     page?: number;
     limit?: number;
-  }): Promise<Warehouse[]> {
-    const { name, contactNumber, page = 1, limit = 10 } = query;
+  }): Promise<{
+    items: Warehouse[];
+    meta: {
+      totalItems: number;
+      totalPages: number;
+      currentPage: number;
+    };
+  }> {
+    const { name, contactNumber, address, page = 1, limit = 10 } = query;
     const skip = (page - 1) * limit;
 
-    return this.prisma.warehouse.findMany({
-      where: {
-        AND: [
-          name ? { name: { contains: name, mode: 'insensitive' } } : {},
-          contactNumber ? { contact_number: { contains: contactNumber, mode: 'insensitive' } } : {},
-        ],
-      },
-      skip,
-      take: limit,
-      include: {
-        address: true,
-      }
-    });
-  }
+    const whereClause: Prisma.WarehouseWhereInput = {
+      AND: [
+        name ? { name: { contains: name, mode: 'insensitive' } } : {},
+        contactNumber ? { contact_number: { contains: contactNumber, mode: 'insensitive' } } : {},
+        address ? {
+          address: {
+            OR: [
+              !isNaN(Number(address)) ? { building_number: Number(address) } : {},
+              !isNaN(Number(address)) ? { apartment_number: Number(address) } : {},
+              { street_name: { contains: address, mode: 'insensitive' } },
+              { city: { contains: address, mode: 'insensitive' } },
+              { country: { contains: address, mode: 'insensitive' } }
+            ]
+          }
+        } : {},
+      ],
+    };
 
+    const [warehouses, total] = await Promise.all([
+      this.prisma.warehouse.findMany({
+        where: whereClause,
+        skip,
+        take: limit,
+        include: {
+          address: true,
+        },
+      }),
+      this.prisma.warehouse.count({
+        where: whereClause,
+      }),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      items: warehouses,
+      meta: {
+        totalItems: total,
+        totalPages,
+        currentPage: page,
+      },
+    };
+  }
 
   async getWarehouseById(id: number): Promise<Warehouse> {
     const warehouse = await this.prisma.warehouse.findUnique({
       where: { warehouse_id: id },
+      include: {
+        address: true,
+      },
     });
     if (!warehouse) {
       throw new NotFoundException(`Warehouse with ID ${id} not found`);
@@ -56,6 +95,9 @@ export class WarehouseService {
   async updateWarehouse(id: number, dto: UpdateWarehouseDto): Promise<Warehouse> {
     const warehouse = await this.prisma.warehouse.findUnique({
       where: { warehouse_id: id },
+      include: {
+        address: true,
+      },
     });
 
     if (!warehouse) {

@@ -16,12 +16,14 @@ export class WarehouseController {
   getAllWarehouse(
     @Query('name') name?: string,
     @Query('contactNumber') contactNumber?: string,
+    @Query('address') address?: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
     return this.warehouseService.getAllWarehouse({
       name,
       contactNumber,
+      address,
       page: page ? parseInt(page) : undefined,
       limit: limit ? parseInt(limit) : undefined,
     });

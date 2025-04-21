@@ -13,8 +13,8 @@ export class CourierWeeklyScheduleService {
       data: {
         schedule_id: dto.scheduleId,
         day_of_week: dto.dayOfWeek,
-        start_time: dto.startTime ? new Date(dto.startTime) : null,
-        end_time: dto.endTime ? new Date(dto.endTime) : null,
+        start_time: dto.startTime ? toNormalizedTime(dto.startTime) : null,
+        end_time: dto.endTime ? toNormalizedTime(dto.endTime) : null,
         is_working_day: dto.isWorkingDay,
       },
     });
@@ -72,7 +72,6 @@ export class CourierWeeklyScheduleService {
     };
   }
 
-
   async getCourierWeeklyScheduleById(id: number): Promise<CourierWeeklySchedule> {
     const weeklySchedule = await this.prisma.courierWeeklySchedule.findUnique({
       where: { weekly_id: id },
@@ -119,4 +118,8 @@ export class CourierWeeklyScheduleService {
 
     return { message: `Weekly Schedule with ID ${id} deleted successfully` };
   }
+}
+
+function toNormalizedTime(time: string): Date {
+  return new Date(`1970-01-01T${time}:00Z`);
 }

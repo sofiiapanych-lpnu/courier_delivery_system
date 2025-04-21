@@ -65,6 +65,7 @@ const DeliveryForm = ({ selectedDelivery, setSelectedDelivery }) => {
         {renderInput("Warehouse Name", "warehouse.name", selectedDelivery?.warehouse?.name)}
         {renderInput("Warehouse Country", "warehouse.address.country", selectedDelivery?.warehouse?.address?.country)}
         {renderInput("Warehouse City", "warehouse.address.city", selectedDelivery?.warehouse?.address?.city)}
+        {renderInput("Street Name", "warehouse.address.street_name", selectedDelivery?.warehouse?.address?.street_name)}
         {renderInput("Building Number", "warehouse.address.building_number", selectedDelivery?.warehouse?.address?.building_number)}
         {renderInput("Apartment Number", "warehouse.address.apartment_number", selectedDelivery?.warehouse?.address?.apartment_number)}
       </div>

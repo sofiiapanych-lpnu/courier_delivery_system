@@ -21,7 +21,7 @@ export class VehicleController {
     @Query('isCompanyOwner') isCompanyOwner?: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
-  ): Promise<Vehicle[]> {
+  ) {
     const query = {
       licensePlate,
       model,
