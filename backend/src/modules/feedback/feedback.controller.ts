@@ -14,18 +14,20 @@ export class FeedbackController {
 
   @Get()
   getAllFeedback(
-    @Query('clientId') clientId?: string,
-    @Query('courierId') courierId?: string,
+    @Query('clientName') clientName?: string,
+    @Query('courierName') courierName?: string,
     @Query('rating') rating?: string,
     @Query('comment') comment?: string,
+    @Query('hasComment') hasComment?: string,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
   ) {
     const query = {
-      clientId: clientId ? parseInt(clientId, 10) : undefined,
-      courierId: courierId ? parseInt(courierId, 10) : undefined,
+      clientId: clientName,
+      courierName: courierName,
       rating: rating ? parseInt(rating, 10) : undefined,
       comment,
+      hasComment,
       page: page ? parseInt(page, 10) : undefined,
       limit: limit ? parseInt(limit, 10) : undefined,
     }

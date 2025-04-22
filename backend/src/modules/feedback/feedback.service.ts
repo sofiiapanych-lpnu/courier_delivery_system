@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateFeedbackDto } from './dto/create-feedback.dto';
 import { UpdateFeedbackDto } from './dto/update-feedback.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Feedback } from '@prisma/client';
+import { Feedback, Prisma } from '@prisma/client';
 
 @Injectable()
 export class FeedbackService {
@@ -20,29 +20,103 @@ export class FeedbackService {
   }
 
   async getAllFeedback(query: {
-    clientId?: number;
-    courierId?: number;
+    clientName?: string;
+    courierName?: string;
     rating?: number;
+    hasComment?: string;
     comment?: string;
     page?: number;
     limit?: number;
-  }): Promise<Feedback[]> {
-    const { clientId, courierId, rating, comment, page = 1, limit = 10 } = query;
+  }): Promise<{
+    items: Feedback[];
+    meta: {
+      totalItems: number;
+      totalPages: number;
+      currentPage: number;
+    };
+  }> {
+    const { clientName, courierName, rating, comment, hasComment, page = 1, limit = 10 } = query;
     const skip = (page - 1) * limit;
 
-    return this.prisma.feedback.findMany({
-      where: {
-        AND: [
-          clientId ? { client_id: clientId } : {},
-          courierId ? { courier_id: courierId } : {},
-          rating ? { rating } : {},
-          comment ? { comment: { contains: comment, mode: 'insensitive' } } : {},
-        ]
+    const whereClause: Prisma.FeedbackWhereInput = {
+      ...(rating && { rating }),
+      ...(comment && {
+        comment: {
+          contains: comment,
+          mode: 'insensitive',
+        },
+      }),
+      ...(hasComment === 'true' && {
+        comment: {
+          not: '',
+        },
+      }),
+      ...(hasComment === 'false' && {
+        OR: [
+          { comment: null },
+          { comment: '' },
+        ],
+      }),
+      ...(courierName && {
+        courier: {
+          user: {
+            OR: [
+              { first_name: { contains: courierName, mode: 'insensitive' } },
+              { last_name: { contains: courierName, mode: 'insensitive' } },
+            ],
+          },
+        },
+      }),
+      ...(clientName && {
+        client: {
+          user: {
+            OR: [
+              { first_name: { contains: clientName, mode: 'insensitive' } },
+              { last_name: { contains: clientName, mode: 'insensitive' } },
+            ],
+          },
+        },
+      }),
+    };
+
+    const [feedbacks, total] = await Promise.all([
+      this.prisma.feedback.findMany({
+        where: whereClause,
+        skip,
+        take: limit,
+        include: {
+          client: {
+            include: {
+              user: true,
+            }
+          },
+          courier: {
+            include: {
+              user: true,
+            }
+          }
+        },
+        orderBy: {
+          created_at: 'desc',
+        },
+      }),
+      this.prisma.feedback.count({
+        where: whereClause,
+      }),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      items: feedbacks,
+      meta: {
+        totalItems: total,
+        totalPages,
+        currentPage: page,
       },
-      skip,
-      take: limit,
-    });
+    };
   }
+
 
   async getFeedbackById(id: number): Promise<Feedback> {
     const feedback = await this.prisma.feedback.findUnique({

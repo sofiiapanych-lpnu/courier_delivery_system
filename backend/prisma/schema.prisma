@@ -162,7 +162,7 @@ model Feedback {
   client_id   Int?
   courier_id  Int
   rating      Int
-  comment     String   @db.VarChar(255)
+  comment     String?  @db.VarChar(255)
   created_at  DateTime @default(now())
 
   client  Client? @relation(fields: [client_id], references: [client_id], onDelete: SetNull)

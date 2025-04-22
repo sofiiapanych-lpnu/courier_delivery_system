@@ -125,56 +125,9 @@ const CourierSchedulePage = () => {
       console.log('selectedSchedule', selectedSchedule)
 
       try {
-        // const normalizedSchedule_ = normalizeCourierScheduleData(selectedSchedule);
-        // console.log('normalizedSchedule_', normalizedSchedule_)
-        // const { data: createdSchedule_ } = await courierScheduleService.create(normalizedSchedule_);
-
-        // console.log('createdSchedule_', createdSchedule_)
-
-        // const weeklyScheduleResponses = await Promise.all(
-        //   selectedSchedule.CourierWeeklySchedule.map(ws =>
-        //     courierWeeklyScheduleService.create(
-        //       normalizeCourierWeeklyScheduleData(
-        //         { ...selectedSchedule, schedule_id: createdSchedule_.schedule_id },
-        //         ws
-        //       )
-        //     )
-        //   )
-        // );
-
-        // console.log('weeklyScheduleResponses', weeklyScheduleResponses)
-
-        // const createdWeekly = weeklyScheduleResponses.map(res => res.data);
-
-        // const newSchedule = {
-        //   ...selectedSchedule,
-        //   CourierWeeklySchedule: createdWeekly
-        // };
-
         const normalizedSchedule = normalizeCourierScheduleData(selectedSchedule);
-        console.log(normalizedSchedule)
 
         const { data: createdSchedule } = await courierScheduleService.create(normalizedSchedule);
-        console.log('createdSchedule', createdSchedule)
-
-        // const weeklyScheduleResponses = await Promise.all(
-        //   selectedSchedule.CourierWeeklySchedule.map(ws =>
-        //     courierWeeklyScheduleService.create(
-        //       normalizeCourierWeeklyScheduleData(
-        //         { ...selectedSchedule, schedule_id: createdSchedule.schedule_id },
-        //         ws
-        //       )
-        //     )
-        //   )
-        // );
-        // console.log('weeklyScheduleResponses', weeklyScheduleResponses)
-
-        // const createdWeekly = weeklyScheduleResponses.map(res => res.data);
-
-        // const newSchedule = {
-        //   ...createdSchedule,
-        //   CourierWeeklySchedule: createdWeekly
-        // };
 
         // setSchedules(prev => [...prev, newSchedule]);
         setRefreshKey(prev => prev + 1);

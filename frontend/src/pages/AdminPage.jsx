@@ -13,6 +13,7 @@ const AdminPage = () => {
           <li><Link to="courier-schedules">Courier schedules</Link></li>
           <li><Link to="warehouses">Warehouses</Link></li>
           <li><Link to="vehicles">Vehicles</Link></li>
+          <li><Link to="feedbacks">Courier feedbacks</Link></li>
         </ul>
       </nav>
 

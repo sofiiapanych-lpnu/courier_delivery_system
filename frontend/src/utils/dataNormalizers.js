@@ -87,3 +87,8 @@ export const normalizeCourierData = (courier) => ({
   licensePlate: courier.license_plate,
   vehicle: courier.vehicle ? normalizeVehicleData(courier.vehicle) : null,
 });
+
+export const normalizeFeedbackData = (feedback) => ({
+  rating: parseInt(feedback.rating),
+  comment: feedback.comment ?? null,
+});
