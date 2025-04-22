@@ -17,13 +17,12 @@ export class CourierScheduleService {
         },
       });
 
-      // Створюємо мапу з переданих днів для легкого доступу
       const providedDaysMap = new Map(
         (dto.weeklySchedule ?? []).map(ws => [ws.dayOfWeek, ws])
       );
 
       const weeklySchedules = Array.from({ length: 7 }, (_, index) => {
-        const ws = providedDaysMap.get(index);
+        const ws = providedDaysMap.get(index); // тут +1 бо дні з 1 до 7
         return {
           schedule_id: schedule.schedule_id,
           day_of_week: index,
@@ -37,9 +36,21 @@ export class CourierScheduleService {
         data: weeklySchedules,
       });
 
-      return schedule;
+      const fullSchedule = await tx.courierSchedule.findUnique({
+        where: { schedule_id: schedule.schedule_id },
+        include: {
+          CourierWeeklySchedule: true,
+        },
+      });
+
+      if (!fullSchedule) {
+        throw new Error('Schedule not found after creation');
+      }
+
+      return fullSchedule;
     });
   }
+
 
 
   async getAllCourierSchedule(query: {

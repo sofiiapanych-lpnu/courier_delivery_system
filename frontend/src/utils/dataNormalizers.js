@@ -68,10 +68,10 @@ export const normalizeWarehouseData = (warehouse) => ({
 });
 
 export const normalizeCourierWeeklyScheduleData = (selectedSchedule, ws) => ({
-  scheduleId: ws.schedule_id ? parseInt(ws.schedule_id, 10) : null,
+  //scheduleId: ws.schedule_id ? parseInt(ws.schedule_id, 10) : null,
   dayOfWeek: ws.day_of_week,
-  startTime: ws.start_time && !isNaN(new Date(ws.start_time).getTime()) ? new Date(ws.start_time) : null,
-  endTime: ws.end_time && !isNaN(new Date(ws.end_time).getTime()) ? new Date(ws.end_time) : null,
+  startTime: ws.start_time && !isNaN(new Date(ws.start_time).getTime()) ? new Date(ws.start_time).toISOString() : null,
+  endTime: ws.end_time && !isNaN(new Date(ws.end_time).getTime()) ? new Date(ws.end_time).toISOString() : null,
   isWorkingDay: ws.is_working_day
 });
 
