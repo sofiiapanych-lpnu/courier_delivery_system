@@ -7,7 +7,11 @@ import Modal from "../components/Modal";
 import LogoutButton from "../components/LogoutButton";
 import Table from '../components/Table'
 import { format } from 'date-fns';
-
+import { formatDelivery } from "../utils/formatters";
+import { userService } from '../api/userService'
+import { courierService } from "../api/courierService";
+import { clientService } from "../api/clientService";
+import { normalizeAddressData } from "../utils/dataNormalizers";
 
 const UserProfilePage = () => {
   const [userInfo, setUserInfo] = useState(null);
@@ -24,7 +28,7 @@ const UserProfilePage = () => {
       return;
     }
 
-    axios.get(`http://localhost:3000/user/${user?.sub}`)
+    userService.getById(user?.sub)
       .then((response) => {
         const userData = response.data;
         setUserInfo(userData);
@@ -34,16 +38,14 @@ const UserProfilePage = () => {
 
         if (isCourier && userData.Courier?.courier_id) {
           const courierId = userData.Courier.courier_id;
-
-          axios.get(`http://localhost:3000/courier/${courierId}/deliveries`)
+          courierService.getDeliveries(courierId)
             .then(res => {
               setDeliveries(res.data);
             })
             .catch(err => console.error("Failed to fetch deliveries", err));
         } else if (userData.role === 'client' && userData.Client?.client_id) {
           const clientId = userData.Client.client_id;
-
-          axios.get(`http://localhost:3000/client/${clientId}/deliveries`)
+          clientService.getDeliveries(clientId)
             .then(res => setDeliveries(res.data))
             .catch(err => console.error("Failed to fetch client deliveries", err));
         }
@@ -58,18 +60,20 @@ const UserProfilePage = () => {
       const courierId = userInfo?.Courier?.courier_id;
       if (!courierId) return;
 
-      const cleanedData = {
-        vehicle: {
-          licensePlate: updatedData.license_plate,
-          model: updatedData.model,
-          transportType: updatedData.transport_type,
-          isCompanyOwner: Boolean(updatedData.owned_by_company),
-        },
-      };
+      // const cleanedData = {
+      //   vehicle: {
+      //     licensePlate: updatedData.license_plate,
+      //     model: updatedData.model,
+      //     transportType: updatedData.transport_type,
+      //     isCompanyOwner: Boolean(updatedData.owned_by_company),
+      //   },
+      // };
+
+      const cleanedData = normalizeCourierData(updatedData);
 
       console.log('cleanedData', cleanedData)
 
-      axios.put(`http://localhost:3000/courier/${courierId}`, cleanedData)
+      courierService.update(courierId, cleanedData)
         .then(response => {
           console.log('Response from backend:', response.data);
           setUserInfo(prev => ({
@@ -88,18 +92,9 @@ const UserProfilePage = () => {
       const clientId = userInfo.Client?.client_id;
       if (!clientId) return;
 
-      const cleanedData = {
-        country: updatedData.country,
-        city: updatedData.city,
-        streetName: updatedData.street_name,
-        buildingNumber: Number(updatedData.building_number),
-        apartmentNumber: updatedData.apartment_number
-          ? Number(updatedData.apartment_number)
-          : null,
-      };
+      const cleanedData = normalizeAddressData(updatedData)
 
-
-      axios.put(`http://localhost:3000/client/${clientId}/address`, cleanedData)
+      clientService.updateAddress(clientId, cleanedData)
         .then(response => {
           setUserInfo(prev => ({
             ...prev,
@@ -126,69 +121,41 @@ const UserProfilePage = () => {
         />
       );
     } else {
-      const address = userInfo.Client?.address || {};
+      const selectedAddress = userInfo.Client?.address || {};
       setModalContent(
-        <AddressForm
-          address={address}
-          onUpdate={handleUserUpdate}
-        />
+        <div>
+          <AddressForm
+            selectedAddress={selectedAddress}
+          />
+          <button onClick={() => handleUserUpdate(selectedAddress)}>
+            Save
+          </button>
+        </div>
       );
     }
     setIsModalOpen(true);
   };
+
   const displayValue = (value) => value || 'Not provided';
-
-  const formatDate = (dateString) => {
-    if (!dateString) return 'Not available';
-    const date = new Date(dateString);
-    return format(date, 'MMMM dd, yyyy HH:mm:ss');
-  };
-
-  const formatAddress = (address) => {
-    if (!address) return 'No address';
-    const { street_name, building_number, apartment_number, city } = address;
-
-    const base = `${street_name} ${building_number}`;
-    const apartment = apartment_number ? `, Apt. ${apartment_number}` : '';
-
-    return `${base}${apartment}, ${city}`;
-  };
-
-  const formatStatus = (status) => {
-    if (!status) return '';
-    return status
-      .split('_')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-      .join(' ');
-  };
 
 
   if (!userInfo) return <div>Loading...</div>;
   console.log(userInfo)
   console.log(deliveries)
 
-  const formattedDeliveries = deliveries.map(delivery => ({
-    ...delivery,
-    created_at: formatDate(delivery.created_at),
-    updated_at: formatDate(delivery.updated_at),
-    address: formatAddress(delivery.Address),
-    warehouse: <>
-      <b>{delivery.warehouse.name}</b><br />
-      {formatAddress(delivery.warehouse.address)}
-    </>,
-    delivery_status: formatStatus(delivery.delivery_status),
-    order: delivery.order.order_type,
-  }));
+  const formattedDeliveries = deliveries.map(formatDelivery);
 
   const deliveryColumns = [
-    { header: 'ID', accessor: 'delivery_id' },
     { header: 'Warehouse', accessor: 'warehouse' },
     { header: 'Address', accessor: 'address' },
     { header: 'Order Type', accessor: 'order' },
+    { header: 'Start Time', accessor: 'start_time' },
+    { header: 'End Time', accessor: 'end_time' },
     { header: 'Status', accessor: 'delivery_status' },
     { header: 'Delivery Type', accessor: 'delivery_type' },
     { header: 'Cost', accessor: 'delivery_cost' },
     { header: 'Payment Method', accessor: 'payment_method' },
+    { header: 'Courier', accessor: 'courier' },
     { header: 'Created At', accessor: 'created_at' },
     { header: 'Updated At', accessor: 'updated_at' },
   ];

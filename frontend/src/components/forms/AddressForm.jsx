@@ -1,84 +1,46 @@
-import React, { useState } from 'react';
+import React from 'react';
 
-const AddressForm = ({ address = {}, onUpdate }) => {
-  const [formData, setFormData] = useState({
-    country: address.country || '',
-    city: address.city || '',
-    street_name: address.street_name || '',
-    building_number: address.building_number || '',
-    apartment_number: address.apartment_number || '',
-  });
+const AddressForm = ({ selectedAddress }) => {
+  const handleChange = (path, value) => {
+    const keys = path.split('.');
+    const updatedAddress = { ...selectedAddress };
+    let current = updatedAddress;
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    keys.forEach((key, index) => {
+      if (index === keys.length - 1) {
+        current[key] = value;
+      } else {
+        if (!current[key]) {
+          current[key] = {};
+        }
+        current = current[key];
+      }
+    });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onUpdate(formData);
-    console.log(formData)
-
-  };
+  const renderInput = (label, path, value, required = false) => (
+    <div className='input-field'>
+      <label>{label}</label>
+      <input
+        type="text"
+        value={value || ''}
+        onChange={(e) => handleChange(path, e.target.value)}
+        required={required}
+      />
+    </div>
+  );
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div>
-        <label>Country:</label>
-        <input
-          type="text"
-          name="country"
-          value={formData.country}
-          onChange={handleChange}
-          required
-        />
+    <div>
+      <h2>Edit Address</h2>
+      <div className='address'>
+        {renderInput("Country", "country", selectedAddress?.country, true)}
+        {renderInput("City", "city", selectedAddress?.city, true)}
+        {renderInput("Street Name", "street_name", selectedAddress?.street_name, true)}
+        {renderInput("Building Number", "building_number", selectedAddress?.building_number, true)}
+        {renderInput("Apartment Number (optional)", "apartment_number", selectedAddress?.apartment_number)}
       </div>
-
-      <div>
-        <label>City:</label>
-        <input
-          type="text"
-          name="city"
-          value={formData.city}
-          onChange={handleChange}
-          required
-        />
-      </div>
-
-      <div>
-        <label>Street Name:</label>
-        <input
-          type="text"
-          name="street_name"
-          value={formData.street_name}
-          onChange={handleChange}
-          required
-        />
-      </div>
-
-      <div>
-        <label>Building Number:</label>
-        <input
-          type="text"
-          name="building_number"
-          value={formData.building_number}
-          onChange={handleChange}
-          required
-        />
-      </div>
-
-      <div>
-        <label>Apartment Number (optional):</label>
-        <input
-          type="text"
-          name="apartment_number"
-          value={formData.apartment_number}
-          onChange={handleChange}
-        />
-      </div>
-
-      <button type="submit">Save</button>
-    </form>
+    </div>
   );
 };
 
