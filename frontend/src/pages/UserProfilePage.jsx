@@ -1,25 +1,21 @@
-import React, { useState, useEffect, useContext } from "react";
-import axios from 'axios';
-import VehicleForm from "../components/forms/VehicleForm";
-import AddressForm from "../components/forms/AddressForm";
+import React, { useState, useEffect } from "react";
+import UserForm from "../components/forms/UserForm";
 import { useUser } from "../context/UserContext";
 import Modal from "../components/Modal";
 import LogoutButton from "../components/LogoutButton";
 import Table from '../components/Table'
-import { format } from 'date-fns';
 import { formatDelivery } from "../utils/formatters";
 import { userService } from '../api/userService'
 import { courierService } from "../api/courierService";
 import { clientService } from "../api/clientService";
-import { normalizeAddressData } from "../utils/dataNormalizers";
+import { normalizeAddressData, normalizeUserData, normalizeVehicleData } from "../utils/dataNormalizers";
 
 const UserProfilePage = () => {
   const [userInfo, setUserInfo] = useState(null);
   const [isCourier, setIsCourier] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalContent, setModalContent] = useState(null);
   const [deliveries, setDeliveries] = useState([]);
-
+  const [editDraft, setEditDraft] = useState(null);
   const { user } = useUser();
 
   useEffect(() => {
@@ -55,25 +51,27 @@ const UserProfilePage = () => {
       });
   }, [user]);
 
-  const handleUserUpdate = (updatedData) => {
+  const handleUserUpdate = () => {
+    const normalizedUser = normalizeUserData(editDraft)
+
+    userService.update(user?.sub, normalizedUser)
+      .then(response => {
+        setUserInfo(response.data);
+        setIsModalOpen(false);
+      })
+      .catch(error => {
+        console.error('Error updating user:', error);
+      });
+
     if (isCourier) {
       const courierId = userInfo?.Courier?.courier_id;
       if (!courierId) return;
 
-      // const cleanedData = {
-      //   vehicle: {
-      //     licensePlate: updatedData.license_plate,
-      //     model: updatedData.model,
-      //     transportType: updatedData.transport_type,
-      //     isCompanyOwner: Boolean(updatedData.owned_by_company),
-      //   },
-      // };
+      const normalizedVehicle = normalizeVehicleData(editDraft.Courier.vehicle);
 
-      const cleanedData = normalizeCourierData(updatedData);
-
-      console.log('cleanedData', cleanedData)
-
-      courierService.update(courierId, cleanedData)
+      courierService.update(courierId, {
+        vehicle: normalizedVehicle
+      })
         .then(response => {
           console.log('Response from backend:', response.data);
           setUserInfo(prev => ({
@@ -92,9 +90,9 @@ const UserProfilePage = () => {
       const clientId = userInfo.Client?.client_id;
       if (!clientId) return;
 
-      const cleanedData = normalizeAddressData(updatedData)
+      const normalizedAddress = normalizeAddressData(editDraft.Client.address)
 
-      clientService.updateAddress(clientId, cleanedData)
+      clientService.updateAddress(clientId, normalizedAddress)
         .then(response => {
           setUserInfo(prev => ({
             ...prev,
@@ -112,27 +110,7 @@ const UserProfilePage = () => {
   };
 
   const handleEditClick = () => {
-    if (isCourier) {
-      const vehicle = userInfo.Courier?.vehicle || {};
-      setModalContent(
-        <VehicleForm
-          vehicle={vehicle}
-          onUpdate={handleUserUpdate}
-        />
-      );
-    } else {
-      const selectedAddress = userInfo.Client?.address || {};
-      setModalContent(
-        <div>
-          <AddressForm
-            selectedAddress={selectedAddress}
-          />
-          <button onClick={() => handleUserUpdate(selectedAddress)}>
-            Save
-          </button>
-        </div>
-      );
-    }
+    setEditDraft(JSON.parse(JSON.stringify(userInfo)));
     setIsModalOpen(true);
   };
 
@@ -140,8 +118,6 @@ const UserProfilePage = () => {
 
 
   if (!userInfo) return <div>Loading...</div>;
-  console.log(userInfo)
-  console.log(deliveries)
 
   const formattedDeliveries = deliveries.map(formatDelivery);
 
@@ -155,7 +131,7 @@ const UserProfilePage = () => {
     { header: 'Delivery Type', accessor: 'delivery_type' },
     { header: 'Cost', accessor: 'delivery_cost' },
     { header: 'Payment Method', accessor: 'payment_method' },
-    { header: 'Courier', accessor: 'courier' },
+    { header: isCourier ? 'Client' : 'Courier', accessor: isCourier ? 'client' : 'courier' },
     { header: 'Created At', accessor: 'created_at' },
     { header: 'Updated At', accessor: 'updated_at' },
   ];
@@ -193,17 +169,15 @@ const UserProfilePage = () => {
         )}
         <button onClick={handleEditClick}>Edit</button>
 
-
         <div>
           <h2>Your Deliveries</h2>
           <Table data={formattedDeliveries} columns={deliveryColumns} />
         </div>
 
-
       </div>
 
-      <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)} onOK={() => null} okText=" " closeText="Close">
-        {modalContent}
+      <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)} onOK={handleUserUpdate}>
+        <UserForm selectedUser={editDraft} setSelectedUser={setEditDraft} />
       </Modal>
     </div>
   );

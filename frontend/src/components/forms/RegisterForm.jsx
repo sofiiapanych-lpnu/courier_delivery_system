@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { useUser } from '../../context/UserContext';
+import { authService } from '../../api/authService';
 
-const RegisterForm = () => {
+const RegisterForm = ({ onSuccess }) => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -29,8 +29,7 @@ const RegisterForm = () => {
     }
 
     try {
-      console.log(payload);
-      const res = await axios.post('http://localhost:3000/auth/signup', payload);
+      const res = await authService.signup(payload);
       localStorage.setItem('token', res.data.access_token);
 
       const decoded = jwt_decode(res.data.access_token);
@@ -39,6 +38,7 @@ const RegisterForm = () => {
       }
 
       setMessage('Registration successful!');
+      if (onSuccess) onSuccess();
     } catch (err) {
       console.error(err.response?.data || err);
       setMessage('Registration failed. Please try again.');

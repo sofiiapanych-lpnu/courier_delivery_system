@@ -1,9 +1,9 @@
 import React from 'react';
 
-const AddressForm = ({ selectedAddress }) => {
+const AddressForm = ({ address, onChange }) => {
   const handleChange = (path, value) => {
     const keys = path.split('.');
-    const updatedAddress = { ...selectedAddress };
+    const updatedAddress = { ...address };
     let current = updatedAddress;
 
     keys.forEach((key, index) => {
@@ -16,16 +16,17 @@ const AddressForm = ({ selectedAddress }) => {
         current = current[key];
       }
     });
+
+    onChange(updatedAddress);
   };
 
-  const renderInput = (label, path, value, required = false) => (
+  const renderInput = (label, path, value) => (
     <div className='input-field'>
       <label>{label}</label>
       <input
         type="text"
         value={value || ''}
         onChange={(e) => handleChange(path, e.target.value)}
-        required={required}
       />
     </div>
   );
@@ -34,11 +35,11 @@ const AddressForm = ({ selectedAddress }) => {
     <div>
       <h2>Edit Address</h2>
       <div className='address'>
-        {renderInput("Country", "country", selectedAddress?.country, true)}
-        {renderInput("City", "city", selectedAddress?.city, true)}
-        {renderInput("Street Name", "street_name", selectedAddress?.street_name, true)}
-        {renderInput("Building Number", "building_number", selectedAddress?.building_number, true)}
-        {renderInput("Apartment Number (optional)", "apartment_number", selectedAddress?.apartment_number)}
+        {renderInput("Country", "country", address?.country)}
+        {renderInput("City", "city", address?.city)}
+        {renderInput("Street Name", "street_name", address?.street_name)}
+        {renderInput("Building Number", "building_number", address?.building_number)}
+        {renderInput("Apartment Number (optional)", "apartment_number", address?.apartment_number)}
       </div>
     </div>
   );

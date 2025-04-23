@@ -304,6 +304,11 @@ export class DeliveryService {
         },
         Address: true,
         order: true,
+        Client: {
+          include: {
+            user: true,
+          }
+        },
       },
     });
 
@@ -325,6 +330,11 @@ export class DeliveryService {
         },
         Address: true,
         order: true,
+        courier: {
+          include: {
+            user: true,
+          }
+        }
       },
     });
 

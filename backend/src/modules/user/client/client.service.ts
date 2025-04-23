@@ -95,14 +95,20 @@ export class ClientService {
   async updateClientAddress(clientId: number, dto: UpdateAddressDto): Promise<Address> {
     const client = await this.prisma.client.findUnique({
       where: { client_id: clientId },
+      include: { address: true },
     });
 
     if (!client) {
       throw new Error(`Client not found`);
     }
 
-    const existingAddress = await this.prisma.address.findFirst({
-      where: {
+    if (!client.address_id) {
+      throw new Error(`Client does not have an address to update`);
+    }
+
+    const updatedAddress = await this.prisma.address.update({
+      where: { address_id: client.address_id },
+      data: {
         country: dto.country,
         city: dto.city,
         street_name: dto.streetName,
@@ -111,35 +117,6 @@ export class ClientService {
       },
     });
 
-    let address;
-
-    if (existingAddress) {
-      address = existingAddress;
-    } else {
-      if (!dto.streetName || !dto.buildingNumber || !dto.country || !dto.city) {
-        throw new Error("Missing required address fields");
-      }
-      const addressData = {
-        country: dto.country,
-        city: dto.city,
-        street_name: dto.streetName,
-        building_number: dto.buildingNumber,
-        apartment_number: dto.apartmentNumber || null,
-      };
-
-      address = await this.prisma.address.create({
-        data: addressData,
-      });
-    }
-
-    await this.prisma.client.update({
-      where: { client_id: clientId },
-      data: { address_id: address.address_id },
-    });
-
-    return address;
+    return updatedAddress;
   }
-
-
-
 }

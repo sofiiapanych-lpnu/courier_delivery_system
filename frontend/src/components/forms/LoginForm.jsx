@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import { authService } from '../../api/authService';
 
-const LoginForm = () => {
+const LoginForm = ({ onSuccess }) => {
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -18,9 +18,10 @@ const LoginForm = () => {
     e.preventDefault();
 
     try {
-      const res = await axios.post('http://localhost:3000/auth/signin', formData);
+      const res = await authService.signin(formData);
       localStorage.setItem('token', res.data.access_token);
       setMessage('Login successful!', res.data.access_token);
+      if (onSuccess) onSuccess();
     } catch (err) {
       setMessage('Login failed. Please check your credentials.');
     }

@@ -1,8 +1,6 @@
 import VehicleSection from "../form-sections/VehicleSection";
 
 const UserForm = ({ selectedUser, setSelectedUser }) => {
-  console.log('selectedUser', selectedUser)
-
   const handleChange = (path, value) => {
     const keys = path.split('.');
     const updatedUser = { ...selectedUser };

@@ -1,11 +1,9 @@
 import React, { useState } from 'react';
 import { useData } from '../hooks/useData';
 import { useFilters } from '../hooks/useFilters'
-import { deliveryService } from '../api/deliveryServise';
+import { deliveryService } from '../api/deliveryService';
 import { warehouseService } from '../api/warehouseService'
 import { addressService } from '../api/addressService';
-import { clientService } from '../api/clientService'
-import { courierService } from '../api/courierService'
 import { orderService } from '../api/orderService'
 import { userService } from '../api/userService'
 import { formatDelivery } from '../utils/formatters';

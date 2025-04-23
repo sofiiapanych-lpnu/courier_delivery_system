@@ -5,7 +5,6 @@ import { userService } from '../api/userService';
 import { formatUsers } from '../utils/formatters';
 import Table from '../components/Table';
 import Modal from '../components/Modal';
-import { Box, Slider } from '@mui/material';
 import UserForm from '../components/forms/UserForm';
 import { addressService } from '../api/addressService';
 import { normalizeAddressData, normalizeUserData, normalizeVehicleData } from '../utils/dataNormalizers';

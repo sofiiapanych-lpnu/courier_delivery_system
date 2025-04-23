@@ -132,15 +132,56 @@ export class CourierService {
 
   private async handleVehicleAssignment(vehicleDto: UpdateVehicleDto, courier: Courier): Promise<string> {
     const { licensePlate } = vehicleDto;
+
     const existingVehicle = await this.prisma.vehicle.findUnique({
       where: { license_plate: licensePlate },
     });
 
     if (!existingVehicle) {
-      throw new Error('Vehicle does not exist. Cannot assign or update.');
+      if (
+        !vehicleDto.licensePlate ||
+        !vehicleDto.model ||
+        !vehicleDto.transportType ||
+        vehicleDto.isCompanyOwner === undefined
+      ) {
+        throw new Error('Cannot create vehicle: missing required fields');
+      }
+
+      const oldVehicle = await this.prisma.vehicle.findUnique({
+        where: { license_plate: courier.license_plate },
+      });
+
+      const result = await this.prisma.$transaction(async (prisma) => {
+        const createdVehicle = await prisma.vehicle.create({
+          data: {
+            license_plate: vehicleDto.licensePlate!,
+            model: vehicleDto.model!,
+            transport_type: vehicleDto.transportType!,
+            is_company_owner: vehicleDto.isCompanyOwner!,
+          },
+        });
+
+        await prisma.courier.update({
+          where: { courier_id: courier.courier_id },
+          data: { license_plate: createdVehicle.license_plate },
+        });
+
+        if (oldVehicle && !oldVehicle.is_company_owner) {
+          await prisma.vehicle.delete({
+            where: { license_plate: oldVehicle.license_plate },
+          });
+        }
+
+        return createdVehicle.license_plate;
+      });
+
+      return result;
     }
 
-    if ((existingVehicle.is_company_owner || courier.license_plate === existingVehicle.license_plate) && licensePlate) {
+    if (
+      (existingVehicle.is_company_owner || courier.license_plate === existingVehicle.license_plate) &&
+      licensePlate
+    ) {
       await this.vehicleService.updateVehicle(licensePlate, vehicleDto);
       return licensePlate;
     }
