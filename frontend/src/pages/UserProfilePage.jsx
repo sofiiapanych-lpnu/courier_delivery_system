@@ -1,20 +1,25 @@
 import React, { useState, useEffect } from "react";
 import UserForm from "../components/forms/UserForm";
 import { useUser } from "../context/UserContext";
+import { useFilters } from "../hooks/useFilters";
 import Modal from "../components/Modal";
 import LogoutButton from "../components/LogoutButton";
-import Table from '../components/Table'
-import { formatDelivery } from "../utils/formatters";
 import { userService } from '../api/userService'
 import { courierService } from "../api/courierService";
 import { clientService } from "../api/clientService";
 import { normalizeAddressData, normalizeUserData, normalizeVehicleData } from "../utils/dataNormalizers";
+import UserDeliveriesSection from "../components/UserDeliveriesSection";
+import UserFeedbacksSection from "../components/UserFeedbacksSection"
+import UserScheduleSection from "../components/UserScheduldeSection";
 
 const UserProfilePage = () => {
+  const [page, setPage] = useState(1);
+  const limit = 5;
+  const [totalPages, setTotalPages] = useState(0);
+
   const [userInfo, setUserInfo] = useState(null);
   const [isCourier, setIsCourier] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [deliveries, setDeliveries] = useState([]);
   const [editDraft, setEditDraft] = useState(null);
   const { user } = useUser();
 
@@ -31,20 +36,6 @@ const UserProfilePage = () => {
 
         const isCourier = userData.role === 'courier';
         setIsCourier(isCourier);
-
-        if (isCourier && userData.Courier?.courier_id) {
-          const courierId = userData.Courier.courier_id;
-          courierService.getDeliveries(courierId)
-            .then(res => {
-              setDeliveries(res.data);
-            })
-            .catch(err => console.error("Failed to fetch deliveries", err));
-        } else if (userData.role === 'client' && userData.Client?.client_id) {
-          const clientId = userData.Client.client_id;
-          clientService.getDeliveries(clientId)
-            .then(res => setDeliveries(res.data))
-            .catch(err => console.error("Failed to fetch client deliveries", err));
-        }
       })
       .catch((error) => {
         console.error('Error fetching user data:', error);
@@ -116,25 +107,7 @@ const UserProfilePage = () => {
 
   const displayValue = (value) => value || 'Not provided';
 
-
   if (!userInfo) return <div>Loading...</div>;
-
-  const formattedDeliveries = deliveries.map(formatDelivery);
-
-  const deliveryColumns = [
-    { header: 'Warehouse', accessor: 'warehouse' },
-    { header: 'Address', accessor: 'address' },
-    { header: 'Order Type', accessor: 'order' },
-    { header: 'Start Time', accessor: 'start_time' },
-    { header: 'End Time', accessor: 'end_time' },
-    { header: 'Status', accessor: 'delivery_status' },
-    { header: 'Delivery Type', accessor: 'delivery_type' },
-    { header: 'Cost', accessor: 'delivery_cost' },
-    { header: 'Payment Method', accessor: 'payment_method' },
-    { header: isCourier ? 'Client' : 'Courier', accessor: isCourier ? 'client' : 'courier' },
-    { header: 'Created At', accessor: 'created_at' },
-    { header: 'Updated At', accessor: 'updated_at' },
-  ];
 
   return (
     <div>
@@ -169,11 +142,9 @@ const UserProfilePage = () => {
         )}
         <button onClick={handleEditClick}>Edit</button>
 
-        <div>
-          <h2>Your Deliveries</h2>
-          <Table data={formattedDeliveries} columns={deliveryColumns} />
-        </div>
-
+        <UserDeliveriesSection userInfo={userInfo} isCourier={isCourier} />
+        <UserFeedbacksSection userInfo={userInfo} isCourier={isCourier} />
+        <UserScheduleSection userInfo={userInfo} isCourier={isCourier} />
       </div>
 
       <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)} onOK={handleUserUpdate}>

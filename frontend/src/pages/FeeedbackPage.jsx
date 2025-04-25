@@ -5,7 +5,7 @@ import FeedbackForm from '../components/forms/FeedbackForm';
 import { feedbackService } from '../api/feedbackService';
 import { useData } from '../hooks/useData';
 import { useFilters } from '../hooks/useFilters'
-import { formateFeedbacks } from '../utils/formatters'
+import { formatFeedbacks } from '../utils/formatters'
 import { normalizeFeedbackData } from '../utils/dataNormalizers'
 
 const FeedbacksPage = () => {
@@ -74,7 +74,7 @@ const FeedbacksPage = () => {
     }
   };
 
-  const formatedFeedbacks = feedbacks.map(formateFeedbacks);
+  const formatedFeedbacks = feedbacks.map(formatFeedbacks);
 
   const columns = [
     { header: 'Courier', accessor: 'courier' },

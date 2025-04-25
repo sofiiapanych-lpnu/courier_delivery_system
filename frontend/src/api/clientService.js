@@ -6,6 +6,7 @@ export const clientService = {
   getById: (id) => api.get(`/client/${id}`),
   update: (id, data) => api.put(`/client/${id}`, data),
   delete: (id) => api.delete(`/client/${id}`),
-  getDeliveries: (clientId) => api.get(`/client/${clientId}/deliveries`),
+  getDeliveries: (clientId, params) => api.get(`/client/${clientId}/deliveries`, { params }),
+  getFeedbacks: (clientId, params) => api.get(`/client/${clientId}/feedbacks`, { params }),
   updateAddress: (clientId, addressDto) => api.put(`/client/${clientId}/address`, addressDto),
 };

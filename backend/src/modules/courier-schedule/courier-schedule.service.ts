@@ -22,7 +22,7 @@ export class CourierScheduleService {
       );
 
       const weeklySchedules = Array.from({ length: 7 }, (_, index) => {
-        const ws = providedDaysMap.get(index); // тут +1 бо дні з 1 до 7
+        const ws = providedDaysMap.get(index);
         return {
           schedule_id: schedule.schedule_id,
           day_of_week: index,
@@ -50,8 +50,6 @@ export class CourierScheduleService {
       return fullSchedule;
     });
   }
-
-
 
   async getAllCourierSchedule(query: {
     courierName?: string;
@@ -226,6 +224,66 @@ export class CourierScheduleService {
     }
     return courierSchedule;
   }
+
+  async getScheduleByCourierId(
+    courierId: number,
+    query: {
+      page?: number;
+      limit?: number;
+    }
+  ): Promise<{
+    items: CourierSchedule[];
+    meta: {
+      totalItems: number;
+      totalPages: number;
+      currentPage: number;
+    };
+  }> {
+    const {
+      page = 1,
+      limit = 10,
+    } = query;
+
+    const skip = (page - 1) * limit;
+
+    const whereClause: Prisma.CourierScheduleWhereInput = {
+      courier_id: courierId,
+    };
+
+    const [schedules, total] = await Promise.all([
+      this.prisma.courierSchedule.findMany({
+        where: whereClause,
+        skip,
+        take: limit,
+        include: {
+          CourierWeeklySchedule: true,
+          courier: {
+            include: {
+              user: true,
+            },
+          },
+        },
+        orderBy: [
+          { created_at: 'desc' },
+        ],
+      }),
+      this.prisma.courierSchedule.count({
+        where: whereClause,
+      }),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    return {
+      items: schedules,
+      meta: {
+        totalItems: total,
+        totalPages,
+        currentPage: page,
+      },
+    };
+  }
+
 
   async updateCourierSchedule(id: number, dto: UpdateCourierScheduleDto): Promise<CourierSchedule> {
     const courierSchedule = await this.prisma.courierSchedule.findUnique({

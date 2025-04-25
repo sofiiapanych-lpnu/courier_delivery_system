@@ -4,6 +4,7 @@ import { ClientService } from './client.service';
 import { CreateClientDto, UpdateClientDto } from './dto';
 import { DeliveryService } from 'src/modules/delivery/delivery.service';
 import { UpdateAddressDto } from 'src/modules/address/dto/update-address.dto';
+import { FeedbackService } from 'src/modules/feedback/feedback.service';
 
 @Controller('client')
 export class ClientController {
@@ -11,6 +12,7 @@ export class ClientController {
     private readonly clientService: ClientService,
     private readonly prisma: PrismaService,
     private readonly deliveryService: DeliveryService,
+    private readonly feedbackService: FeedbackService,
   ) { }
 
   @Post()
@@ -84,8 +86,65 @@ export class ClientController {
   }
 
   @Get(':clientId/deliveries')
-  getDeliveryByClientId(@Param('clientId') id: string) {
-    return this.deliveryService.getDeliveryByClientId(+id);
+  getDeliveryByClientId(
+    @Param('clientId') id: string,
+    @Query('deliveryType') deliveryType?: string,
+    @Query('deliveryCost') deliveryCost?: string,
+    @Query('paymentMethod') paymentMethod?: string,
+    @Query('deliveryStatus') deliveryStatus?: string,
+    @Query('startTime') startTime?: string,
+    @Query('endTime') endTime?: string,
+    @Query('warehouseAddressQuery') warehouseAddressQuery?: string,
+    @Query('clientAddressQuery') clientAddressQuery?: string,
+    @Query('orderTypeQuery') orderTypeQuery?: string,
+    @Query('courierNameQuery') courierNameQuery?: string,
+    @Query('minCost') minCost?: string,
+    @Query('maxCost') maxCost?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string
+  ) {
+    const query = {
+      deliveryType,
+      deliveryCost: deliveryCost ? parseFloat(deliveryCost) : undefined,
+      paymentMethod,
+      deliveryStatus,
+      startTime: startTime ? new Date(startTime) : undefined,
+      endTime: endTime ? new Date(endTime) : undefined,
+      warehouseAddressQuery,
+      clientAddressQuery,
+      orderTypeQuery,
+      courierNameQuery,
+      minCost: minCost ? parseFloat(minCost) : undefined,
+      maxCost: maxCost ? parseFloat(maxCost) : undefined,
+      page: page ? parseInt(page, 10) : undefined,
+      limit: limit ? parseInt(limit, 10) : undefined,
+    };
+
+    return this.deliveryService.getDeliveryByClientId(+id, query);
+  }
+
+  @Get(':clientId/feedbacks')
+  async getFeedbackByClientId(
+    @Param('clientId') id: string,
+    @Query('courierName') courierName?: string,
+    @Query('rating') rating?: string,
+    @Query('hasComment') hasComment?: string,
+    @Query('comment') comment?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    const numericId = parseInt(id, 10);
+
+    const query = {
+      courierName,
+      rating: rating ? parseInt(rating, 10) : undefined,
+      hasComment,
+      comment,
+      page: page ? parseInt(page, 10) : undefined,
+      limit: limit ? parseInt(limit, 10) : undefined,
+    };
+
+    return this.feedbackService.getFeedbackByClientId(numericId, query);
   }
 
   @Put(':id/address')

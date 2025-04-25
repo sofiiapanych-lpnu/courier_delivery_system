@@ -118,8 +118,10 @@ export const formatWarehouse = (warehouse) => ({
   address: formatAddress(warehouse?.address),
 })
 
-export const formateFeedbacks = (feedback) => ({
+export const formatFeedbacks = (feedback) => ({
   ...feedback,
   courier: formatPerson(feedback.courier),
   client: formatPerson(feedback.client),
+  created_at: formatDate(feedback.created_at),
+  updated_at: formatDate(feedback.updated_at),
 })
