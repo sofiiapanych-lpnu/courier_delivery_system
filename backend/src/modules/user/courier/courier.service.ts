@@ -117,7 +117,6 @@ export class CourierService {
     return { message: `Courier with ID ${courierId} deleted successfully` };
   }
 
-
   private async findCourierOrThrow(courierId: number): Promise<Courier> {
     const courier = await this.prisma.courier.findUnique({
       where: { courier_id: courierId },
@@ -187,6 +186,118 @@ export class CourierService {
     }
 
     throw new Error('This vehicle already exists and is not owned by a company.');
+  }
+
+  async getCourierStatistics(query: {
+    startDate?: Date;
+    endDate?: Date;
+    courierId?: number;
+    groupBy?: 'year' | 'month' | 'day';
+  }) {
+    const { startDate, endDate, courierId, groupBy } = query;
+
+    const whereClause: Prisma.DeliveryWhereInput = {
+      ...(startDate ? { start_time: { gte: startDate } } : {}),
+      ...(endDate ? { end_time: { lte: endDate } } : {}),
+      ...(courierId ? { courier_id: courierId } : {}),
+    };
+
+    const deliveries = await this.prisma.delivery.findMany({
+      where: whereClause,
+      include: {
+        courier: {
+          include: {
+            user: true,
+          },
+        },
+        Client: {
+          include: {
+            user: true,
+          }
+        },
+        warehouse: {
+          include: {
+            address: true,
+          }
+        },
+        Address: true,
+        order: true,
+      },
+    });
+
+    const grouped = deliveries.reduce((acc, delivery) => {
+      if (!delivery.courier || !delivery.start_time) return acc;
+
+      const date = new Date(delivery.start_time);
+      let groupKey = 'all';
+
+      if (groupBy === 'year') {
+        groupKey = `${date.getFullYear()}`;
+      } else if (groupBy === 'month') {
+        groupKey = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+      } else if (groupBy === 'day') {
+        groupKey = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')}`;
+      }
+
+      const courierId = delivery.courier.courier_id;
+      const courierName = `${delivery.courier.user?.first_name ?? ''} ${delivery.courier.user?.last_name ?? ''}`.trim();
+
+      if (!acc[groupKey]) {
+        acc[groupKey] = {};
+      }
+
+      if (!acc[groupKey][courierId]) {
+        acc[groupKey][courierId] = {
+          courierId,
+          courierName,
+          totalDeliveries: 0,
+          totalCost: 0,
+          avgDeliveryCost: 0,
+          inProgressDeliveries: 0,
+          completedDeliveries: 0,
+          averageDeliveryTimeMinutes: 0,
+          totalDeliveryTimeMinutes: 0,
+          deliveries: [],
+        };
+      }
+
+      const group = acc[groupKey][courierId];
+
+      group.totalDeliveries += 1;
+      group.totalCost += delivery.delivery_cost ? delivery.delivery_cost.toNumber() : 0;
+
+      if (delivery.delivery_status?.toLowerCase() === 'completed') {
+        group.completedDeliveries += 1;
+      }
+      if (delivery.delivery_status?.toLowerCase() === 'in_progress') {
+        group.inProgressDeliveries += 1;
+      }
+
+      if (delivery.start_time && delivery.end_time) {
+        const deliveryTimeMinutes = (new Date(delivery.end_time).getTime()
+          - new Date(delivery.start_time).getTime()) / (1000 * 60);
+        group.totalDeliveryTimeMinutes += deliveryTimeMinutes;
+      }
+
+      group.deliveries.push(delivery);
+
+      return acc;
+    }, {} as Record<string, Record<number, any>>);
+
+    const result = Object.entries(grouped).map(([groupKey, couriers]) => ({
+      group: groupKey,
+      couriers: Object.values(couriers).map(courierStats => ({
+        ...courierStats,
+        avgDeliveryCost: courierStats.totalDeliveries > 0
+          ? +(courierStats.totalCost / courierStats.totalDeliveries).toFixed(2)
+          : 0,
+        averageDeliveryTimeMinutes: courierStats.totalDeliveries > 0
+          ? +(courierStats.totalDeliveryTimeMinutes / courierStats.totalDeliveries).toFixed(2)
+          : 0,
+      }))
+    }));
+
+    return result;
   }
 
 }

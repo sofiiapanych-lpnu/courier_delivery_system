@@ -11,6 +11,7 @@ import CourierSchedulePage from "../pages/CourierSchedulePage.jsx";
 import WarehousesPage from "../pages/WarehousesPage.jsx";
 import VehiclesPage from "../pages/VehiclesPage.jsx";
 import FeedbacksPage from "../pages/FeeedbackPage.jsx";
+import ReportPage from "../pages/ReportPage.jsx";
 
 const AppRoutes = () => {
   return (
@@ -27,6 +28,8 @@ const AppRoutes = () => {
           <Route path="warehouses" element={<WarehousesPage />} />
           <Route path="vehicles" element={<VehiclesPage />} />
           <Route path="feedbacks" element={<FeedbacksPage />} />
+
+          <Route path="reports" element={<ReportPage />} />
         </Route>
 
         {/* Захищений маршрут, доступний тільки для авторизованих користувачів */}

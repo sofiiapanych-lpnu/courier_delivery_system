@@ -50,6 +50,26 @@ export class CourierController {
     return this.courierService.getAllCouriers(query);
   }
 
+  @Get('statistics')
+  async getCourierStatistics(
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+    @Query('courierId') courierId?: string,
+    @Query('groupBy') groupBy?: string,
+  ) {
+    const validGroupBy: 'year' | 'month' | 'day' | undefined =
+      groupBy === 'year' || groupBy === 'month' || groupBy === 'day' ? groupBy : undefined;
+
+    const query = {
+      startDate: startDate ? new Date(startDate) : undefined,
+      endDate: endDate ? new Date(endDate) : undefined,
+      courierId: courierId ? parseInt(courierId, 10) : undefined,
+      groupBy: validGroupBy,
+    };
+
+    return this.courierService.getCourierStatistics(query);
+  }
+
   @Get(':id')
   async getCourierById(@Param('id', ParseIntPipe) id: number) {
     try {
@@ -135,6 +155,7 @@ export class CourierController {
 
     return this.scheduleService.getScheduleByCourierId(numericId, query);
   }
+
   @Put(':id')
   async updateCourier(
     @Param('id', ParseIntPipe) id: number,

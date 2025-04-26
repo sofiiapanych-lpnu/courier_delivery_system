@@ -14,6 +14,7 @@ const AdminPage = () => {
           <li><Link to="warehouses">Warehouses</Link></li>
           <li><Link to="vehicles">Vehicles</Link></li>
           <li><Link to="feedbacks">Courier feedbacks</Link></li>
+          <li><Link to="reports">Reports</Link></li>
         </ul>
       </nav>
 

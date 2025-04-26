@@ -9,4 +9,5 @@ export const courierService = {
   getDeliveries: (courierId, params) => api.get(`/courier/${courierId}/deliveries`, { params }),
   getFeedbacks: (courierId, params) => api.get(`/courier/${courierId}/feedbacks`, { params }),
   getSchedule: (courierId, params) => api.get(`/courier/${courierId}/schedule`, { params }),
+  getStatistics: (params) => api.get(`/courier/statistics`, { params }),
 };
