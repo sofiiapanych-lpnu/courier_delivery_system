@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useData } from '../hooks/useData';
-import { useFilters } from '../hooks/useFilters';
-import { userService } from '../api/userService';
-import { formatUsers } from '../utils/formatters';
-import Table from '../components/Table';
-import Modal from '../components/Modal';
-import UserForm from '../components/forms/UserForm';
-import { addressService } from '../api/addressService';
-import { normalizeAddressData, normalizeUserData, normalizeVehicleData } from '../utils/dataNormalizers';
-import { clientService } from '../api/clientService';
-import { vehicleService } from '../api/vehicleService';
-import { courierService } from '../api/courierService';
+import { useData } from '../../hooks/useData';
+import { useFilters } from '../../hooks/useFilters';
+import { userService } from '../../api/userService';
+import { formatUsers } from '../../utils/formatters';
+import Table from '../../components/Table';
+import Modal from '../../components/Modal';
+import UserForm from '../../components/forms/UserForm';
+import { addressService } from '../../api/addressService';
+import { normalizeAddressData, normalizeUserData, normalizeVehicleData } from '../../utils/dataNormalizers';
+import { clientService } from '../../api/clientService';
+import { vehicleService } from '../../api/vehicleService';
+import { courierService } from '../../api/courierService';
 
 const UsersPage = () => {
   const [page, setPage] = useState(1);

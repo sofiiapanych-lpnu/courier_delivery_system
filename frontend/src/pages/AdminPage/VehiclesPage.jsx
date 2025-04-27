@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useData } from '../hooks/useData';
-import { useFilters } from '../hooks/useFilters';
-import { vehicleService } from '../api/vehicleService';
-import { courierService } from '../api/courierService'
-import { formatVehicle } from '../utils/formatters';
-import { normalizeVehicleData, normalizeCourierData } from '../utils/dataNormalizers';
-import Table from '../components/Table';
-import Modal from '../components/Modal';
-import VehicleForm from '../components/forms/VehicleForm';
+import { useData } from '../../hooks/useData';
+import { useFilters } from '../../hooks/useFilters';
+import { vehicleService } from '../../api/vehicleService';
+import { courierService } from '../../api/courierService'
+import { formatVehicle } from '../../utils/formatters';
+import { normalizeVehicleData, normalizeCourierData } from '../../utils/dataNormalizers';
+import Table from '../../components/Table';
+import Modal from '../../components/Modal';
+import VehicleForm from '../../components/forms/VehicleForm';
 
 const VehiclesPage = () => {
   const [page, setPage] = useState(1);

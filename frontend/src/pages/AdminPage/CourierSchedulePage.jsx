@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { useData } from '../hooks/useData';
-import { useFilters } from '../hooks/useFilters';
-import { courierScheduleService } from '../api/courierScheduleService';
-import { courierWeeklyScheduleService } from '../api/courierWeeklyScheduleService'
-import { formatSchedule } from '../utils/formatters'
-import { normalizeCourierWeeklyScheduleData, normalizeCourierScheduleData } from '../utils/dataNormalizers'
-import Table from '../components/Table';
-import Modal from '../components/Modal';
-import CourierScheduleForm from '../components/forms/CourierScheduleForm';
+import { useData } from '../../hooks/useData';
+import { useFilters } from '../../hooks/useFilters';
+import { courierScheduleService } from '../../api/courierScheduleService';
+import { courierWeeklyScheduleService } from '../../api/courierWeeklyScheduleService'
+import { formatSchedule } from '../../utils/formatters'
+import { normalizeCourierWeeklyScheduleData, normalizeCourierScheduleData } from '../../utils/dataNormalizers'
+import Table from '../../components/Table';
+import Modal from '../../components/Modal';
+import CourierScheduleForm from '../../components/forms/CourierScheduleForm';
 
 const CourierSchedulePage = () => {
   const [page, setPage] = useState(1);

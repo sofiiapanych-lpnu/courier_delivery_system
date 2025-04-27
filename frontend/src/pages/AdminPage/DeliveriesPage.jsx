@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
-import { useData } from '../hooks/useData';
-import { useFilters } from '../hooks/useFilters'
-import { deliveryService } from '../api/deliveryService';
-import { warehouseService } from '../api/warehouseService'
-import { addressService } from '../api/addressService';
-import { orderService } from '../api/orderService'
-import { userService } from '../api/userService'
-import { formatDelivery } from '../utils/formatters';
-import { normalizeOrderData, normalizeDeliveryData, normalizeWarehouseData, normalizeAddressData, normalizeUserData } from '../utils/dataNormalizers'
-import Table from '../components/Table'
-import Modal from '../components/Modal'
-import DeliveryForm from '../components/forms/DeliveryForm';
+import { useData } from '../../hooks/useData';
+import { useFilters } from '../../hooks/useFilters'
+import { deliveryService } from '../../api/deliveryService';
+import { warehouseService } from '../../api/warehouseService'
+import { addressService } from '../../api/addressService';
+import { orderService } from '../../api/orderService'
+import { userService } from '../../api/userService'
+import { formatDelivery } from '../../utils/formatters';
+import { normalizeOrderData, normalizeDeliveryData, normalizeWarehouseData, normalizeAddressData, normalizeUserData } from '../../utils/dataNormalizers'
+import Table from '../../components/Table'
+import Modal from '../../components/Modal'
+import DeliveryForm from '../../components/forms/DeliveryForm';
 
 const DeliveriesPage = () => {
   const [page, setPage] = useState(1);

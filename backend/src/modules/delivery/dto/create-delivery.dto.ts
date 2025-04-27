@@ -5,6 +5,7 @@ export class CreateDeliveryDto {
   @IsInt()
   orderId: number;
 
+  @IsOptional()
   @IsInt()
   courierId: number;
 

@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { useData } from '../hooks/useData';
-import { useFilters } from '../hooks/useFilters';
-import { warehouseService } from '../api/warehouseService';
-import { addressService } from '../api/addressService'
-import { formatWarehouse } from '../utils/formatters';
-import { normalizeWarehouseData, normalizeAddressData } from '../utils/dataNormalizers';
-import Table from '../components/Table';
-import Modal from '../components/Modal';
-import WarehouseForm from '../components/forms/WarehouseForm';
+import { useData } from '../../hooks/useData';
+import { useFilters } from '../../hooks/useFilters';
+import { warehouseService } from '../../api/warehouseService';
+import { addressService } from '../../api/addressService'
+import { formatWarehouse } from '../../utils/formatters';
+import { normalizeWarehouseData, normalizeAddressData } from '../../utils/dataNormalizers';
+import Table from '../../components/Table';
+import Modal from '../../components/Modal';
+import WarehouseForm from '../../components/forms/WarehouseForm';
 
 const WarehousesPage = () => {
   const [page, setPage] = useState(1);

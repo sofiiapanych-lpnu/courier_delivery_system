@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { useData } from '../hooks/useData';
-import { useFilters } from '../hooks/useFilters';
-import { orderService } from '../api/orderService';
-import { clientService } from '../api/clientService';
-import { formatOrder } from '../utils/formatters';
-import { normalizeOrderData } from '../utils/dataNormalizers';
-import Table from '../components/Table';
-import Modal from '../components/Modal';
-import OrderForm from '../components/forms/OrderForm';
+import { useData } from '../../hooks/useData';
+import { useFilters } from '../../hooks/useFilters';
+import { orderService } from '../../api/orderService';
+import { clientService } from '../../api/clientService';
+import { formatOrder } from '../../utils/formatters';
+import { normalizeOrderData } from '../../utils/dataNormalizers';
+import Table from '../../components/Table';
+import Modal from '../../components/Modal';
+import OrderForm from '../../components/forms/OrderForm';
 import { Slider, Box } from '@mui/material';
 
 const OrdersPage = () => {

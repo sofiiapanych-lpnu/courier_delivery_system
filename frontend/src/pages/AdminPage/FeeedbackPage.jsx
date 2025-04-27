@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import Modal from '../components/Modal';
-import Table from '../components/Table';
-import FeedbackForm from '../components/forms/FeedbackForm';
-import { feedbackService } from '../api/feedbackService';
-import { useData } from '../hooks/useData';
-import { useFilters } from '../hooks/useFilters'
-import { formatFeedbacks } from '../utils/formatters'
-import { normalizeFeedbackData } from '../utils/dataNormalizers'
+import Modal from '../../components/Modal';
+import Table from '../../components/Table';
+import FeedbackForm from '../../components/forms/FeedbackForm';
+import { feedbackService } from '../../api/feedbackService';
+import { useData } from '../../hooks/useData';
+import { useFilters } from '../../hooks/useFilters'
+import { formatFeedbacks } from '../../utils/formatters'
+import { normalizeFeedbackData } from '../../utils/dataNormalizers'
 
 const FeedbacksPage = () => {
   const [page, setPage] = useState(1);

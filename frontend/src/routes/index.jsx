@@ -3,15 +3,17 @@ import Home from "../pages/Home.jsx";
 import Auth from "../pages/Auth.jsx";
 import ProtectedRoute from "./ProtectedRoute";
 import UserProfilePage from "../pages/UserProfilePage.jsx";
-import AdminPage from "../pages/AdminPage.jsx";
-import DeliveriesPage from "../pages/DeliveriesPage.jsx";
-import UserPage from "../pages/UserPage.jsx"
-import OrdersPage from "../pages/OrdersPage.jsx";
-import CourierSchedulePage from "../pages/CourierSchedulePage.jsx";
-import WarehousesPage from "../pages/WarehousesPage.jsx";
-import VehiclesPage from "../pages/VehiclesPage.jsx";
-import FeedbacksPage from "../pages/FeeedbackPage.jsx";
-import ReportPage from "../pages/ReportPage.jsx";
+import AdminPage from "../pages/AdminPage/AdminPage.jsx";
+import DeliveriesPage from "../pages/AdminPage/DeliveriesPage.jsx";
+import UserPage from "../pages/AdminPage/UserPage.jsx"
+import OrdersPage from "../pages/AdminPage/OrdersPage.jsx";
+import CourierSchedulePage from "../pages/AdminPage/CourierSchedulePage.jsx";
+import WarehousesPage from "../pages/AdminPage/WarehousesPage.jsx";
+import VehiclesPage from "../pages/AdminPage/VehiclesPage.jsx";
+import FeedbacksPage from "../pages/AdminPage/FeeedbackPage.jsx";
+import ReportPage from "../pages/AdminPage/ReportPage.jsx";
+import WarehousesListPage from "../pages/WarehousesListPage.jsx";
+import CreateOrderPage from "../pages/CreateOrderPage.jsx";
 
 const AppRoutes = () => {
   return (
@@ -28,9 +30,10 @@ const AppRoutes = () => {
           <Route path="warehouses" element={<WarehousesPage />} />
           <Route path="vehicles" element={<VehiclesPage />} />
           <Route path="feedbacks" element={<FeedbacksPage />} />
-
           <Route path="reports" element={<ReportPage />} />
         </Route>
+        <Route path="/warehouses" element={<WarehousesListPage />}></Route>
+        <Route path="/warehouses/:warehouseId/create-order" element={<CreateOrderPage />} />
 
         {/* Захищений маршрут, доступний тільки для авторизованих користувачів */}
         {/* <Route

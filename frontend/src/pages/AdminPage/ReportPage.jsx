@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import Table from '../components/Table';
-import { courierService } from '../api/courierService';
+import Table from '../../components/Table';
+import { courierService } from '../../api/courierService';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid, ResponsiveContainer, Line, LineChart, ComposedChart } from 'recharts';
-import Modal from '../components/Modal'
-import { formatDelivery } from '../utils/formatters'
+import Modal from '../../components/Modal'
+import { formatDelivery } from '../../utils/formatters'
 
 const ReportPage = () => {
   const [reportData, setReportData] = useState([]);

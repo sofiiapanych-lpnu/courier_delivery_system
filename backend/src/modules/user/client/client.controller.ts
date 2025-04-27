@@ -58,6 +58,15 @@ export class ClientController {
     }
   }
 
+  @Get('/by-user/:id')
+  async getClientByUserId(@Param('id', ParseIntPipe) id: number) {
+    try {
+      return await this.clientService.getClientByUserId(id);
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.NOT_FOUND);
+    }
+  }
+
   @Put(':id')
   async updateClient(
     @Param('id', ParseIntPipe) id: number,
