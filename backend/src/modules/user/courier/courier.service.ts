@@ -193,8 +193,11 @@ export class CourierService {
     endDate?: Date;
     courierId?: number;
     groupBy?: 'year' | 'month' | 'day';
+    page?: number;
+    limit?: number;
   }) {
-    const { startDate, endDate, courierId, groupBy } = query;
+    const { startDate, endDate, courierId, groupBy, page = 1, limit = 10 } = query;
+    const skip = (page - 1) * limit;
 
     const whereClause: Prisma.DeliveryWhereInput = {
       ...(startDate ? { start_time: { gte: startDate } } : {}),
@@ -205,21 +208,9 @@ export class CourierService {
     const deliveries = await this.prisma.delivery.findMany({
       where: whereClause,
       include: {
-        courier: {
-          include: {
-            user: true,
-          },
-        },
-        Client: {
-          include: {
-            user: true,
-          }
-        },
-        warehouse: {
-          include: {
-            address: true,
-          }
-        },
+        courier: { include: { user: true } },
+        Client: { include: { user: true } },
+        warehouse: { include: { address: true } },
         Address: true,
         order: true,
       },
@@ -274,8 +265,7 @@ export class CourierService {
       }
 
       if (delivery.start_time && delivery.end_time) {
-        const deliveryTimeMinutes = (new Date(delivery.end_time).getTime()
-          - new Date(delivery.start_time).getTime()) / (1000 * 60);
+        const deliveryTimeMinutes = (new Date(delivery.end_time).getTime() - new Date(delivery.start_time).getTime()) / (1000 * 60);
         group.totalDeliveryTimeMinutes += deliveryTimeMinutes;
       }
 
@@ -284,7 +274,7 @@ export class CourierService {
       return acc;
     }, {} as Record<string, Record<number, any>>);
 
-    const result = Object.entries(grouped).map(([groupKey, couriers]) => ({
+    const resultArray = Object.entries(grouped).map(([groupKey, couriers]) => ({
       group: groupKey,
       couriers: Object.values(couriers).map(courierStats => ({
         ...courierStats,
@@ -297,8 +287,20 @@ export class CourierService {
       }))
     }));
 
-    return result;
+    const totalItems = resultArray.length;
+    const totalPages = Math.ceil(totalItems / limit);
+    const paginatedItems = resultArray.slice(skip, skip + limit);
+
+    return {
+      items: paginatedItems,
+      meta: {
+        totalItems,
+        totalPages,
+        currentPage: page,
+      },
+    };
   }
+
 
 }
 

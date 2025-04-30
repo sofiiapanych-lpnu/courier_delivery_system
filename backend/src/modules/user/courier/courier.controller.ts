@@ -56,6 +56,8 @@ export class CourierController {
     @Query('endDate') endDate?: string,
     @Query('courierId') courierId?: string,
     @Query('groupBy') groupBy?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
   ) {
     const validGroupBy: 'year' | 'month' | 'day' | undefined =
       groupBy === 'year' || groupBy === 'month' || groupBy === 'day' ? groupBy : undefined;
@@ -65,6 +67,8 @@ export class CourierController {
       endDate: endDate ? new Date(endDate) : undefined,
       courierId: courierId ? parseInt(courierId, 10) : undefined,
       groupBy: validGroupBy,
+      page: page ? parseInt(page, 10) : undefined,
+      limit: limit ? parseInt(limit, 10) : undefined,
     };
 
     return this.courierService.getCourierStatistics(query);
@@ -183,4 +187,6 @@ export class CourierController {
       );
     }
   }
+
+
 }

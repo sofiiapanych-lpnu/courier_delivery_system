@@ -30,7 +30,7 @@ export class AuthService {
         vehicle: dto.vehicle,
       });
 
-      return this.signToken(user.user_id, user.email);
+      return this.signToken(user.user_id, user.email, user.role, user.first_name, user.last_name,);
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {//unique field violation
@@ -62,13 +62,15 @@ export class AuthService {
       )
     }
 
-    return this.signToken(user.user_id, user.email);
+    return this.signToken(user.user_id, user.email, user.role, user.first_name, user.last_name);
   }
 
-  async signToken(userId: number, email: string): Promise<{ access_token: string }> {
+  async signToken(userId: number, email: string, role: string, firstName: string, lastName: string): Promise<{ access_token: string }> {
     const payload = {
       sub: userId,
-      email
+      email,
+      role,
+      username: `${firstName} ${lastName}`,
     }
 
     const secret = this.config.get('JWT_SECRET')
