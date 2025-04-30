@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import Card from "../components/Card";
+import Pagination from '../components/Pagination'
 import { useFilters } from '../hooks/useFilters'
 import { useData } from '../hooks/useData'
 import { warehouseService } from '../api/warehouseService'
 import { formatWarehouse } from '../utils/formatters'
+import styles from './WarehousesListPage.module.css';
 
 const WarehousesListPage = () => {
   const [page, setPage] = useState(1);
@@ -36,9 +38,9 @@ const WarehousesListPage = () => {
 
 
   return (
-    <div>
-      <h1>Warehouses</h1>
-      <div className='filters'>
+    <div className={styles.container}>
+      <h1 className={styles.title}>Warehouses</h1>
+      <div className={styles.filters}>
         <input
           name="name"
           onChange={handleFilterChange}
@@ -64,7 +66,6 @@ const WarehousesListPage = () => {
           <Card
             key={warehouse.warehouse_id}
             title={warehouse.name}
-            description="тут може бути те, що пропонує склад"
             details={{
               "Address": warehouse.address,
               "Contact number": warehouse.contact_number
@@ -73,21 +74,7 @@ const WarehousesListPage = () => {
             onButtonClick={() => handleSelectWarehouse(warehouse)}
           />
         ))}
-        <div style={{ marginTop: '20px' }}>
-          <button
-            onClick={() => setPage(prev => Math.max(prev - 1, 1))}
-            disabled={page === 1}
-          >
-            Prev
-          </button>
-          <span style={{ margin: '0 10px' }}>Page {page} of {totalPages}</span>
-          <button
-            onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
-            disabled={page === totalPages}
-          >
-            Next
-          </button>
-        </div>
+        <Pagination page={page} totalPages={totalPages} setPage={setPage} />
       </div>
     </div>
   );

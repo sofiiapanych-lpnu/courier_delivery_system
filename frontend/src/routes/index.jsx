@@ -14,15 +14,17 @@ import FeedbacksPage from "../pages/AdminPage/FeeedbackPage.jsx";
 import ReportPage from "../pages/AdminPage/ReportPage.jsx";
 import WarehousesListPage from "../pages/WarehousesListPage.jsx";
 import CreateOrderPage from "../pages/CreateOrderPage.jsx";
+import Layout from '../layouts/Layout.jsx'
+import AdminLayout from '../layouts/AdminLayout.jsx'
 
 const AppRoutes = () => {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Layout><Home /></Layout>} />
         <Route path="/login" element={<Auth />} />
-        <Route path="/user" element={<UserProfilePage />}></Route>
-        <Route path="/admin" element={<AdminPage />}>
+        <Route path="/user" element={<Layout><UserProfilePage /></Layout>}></Route>
+        <Route path="/admin" element={<AdminLayout><AdminPage /></AdminLayout>}>
           <Route path="deliveries" element={<DeliveriesPage />} />
           <Route path="users" element={<UserPage />} />
           <Route path="orders" element={<OrdersPage />} />
@@ -32,8 +34,8 @@ const AppRoutes = () => {
           <Route path="feedbacks" element={<FeedbacksPage />} />
           <Route path="reports" element={<ReportPage />} />
         </Route>
-        <Route path="/warehouses" element={<WarehousesListPage />}></Route>
-        <Route path="/warehouses/:warehouseId/create-order" element={<CreateOrderPage />} />
+        <Route path="/warehouses" element={<Layout><WarehousesListPage /></Layout>}></Route>
+        <Route path="/warehouses/:warehouseId/create-order" element={<Layout><CreateOrderPage /></Layout>} />
 
         {/* Захищений маршрут, доступний тільки для авторизованих користувачів */}
         {/* <Route

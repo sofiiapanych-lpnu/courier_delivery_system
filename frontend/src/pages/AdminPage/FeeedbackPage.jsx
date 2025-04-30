@@ -7,6 +7,7 @@ import { useData } from '../../hooks/useData';
 import { useFilters } from '../../hooks/useFilters'
 import { formatFeedbacks } from '../../utils/formatters'
 import { normalizeFeedbackData } from '../../utils/dataNormalizers'
+import Pagination from '../../components/Pagination'
 
 const FeedbacksPage = () => {
   const [page, setPage] = useState(1);
@@ -156,11 +157,8 @@ const FeedbacksPage = () => {
       </div>
       <Table data={formatedFeedbacks} columns={columns} />
 
-      <div style={{ marginTop: '20px' }}>
-        <button onClick={() => setPage(p => Math.max(p - 1, 1))} disabled={page === 1}>Prev</button>
-        <span style={{ margin: '0 10px' }}>Page {page} of {totalPages}</span>
-        <button onClick={() => setPage(p => Math.min(p + 1, totalPages))} disabled={page === totalPages}>Next</button>
-      </div>
+      <Pagination page={page} totalPages={totalPages} setPage={setPage} />
+
 
       {modalOpen && (
         <Modal open={modalOpen} onClose={handleModalClose} onOK={handleModalOK}>

@@ -108,10 +108,10 @@ const UserProfilePage = () => {
   const displayValue = (value) => value || 'Not provided';
 
   if (!userInfo) return <div>Loading...</div>;
+  const isAdmin = userInfo.role === 'admin';
 
   return (
     <div>
-      <LogoutButton></LogoutButton>
       <h1>User Profile</h1>
       <div>
         <h2>Basic Info</h2>
@@ -120,32 +120,34 @@ const UserProfilePage = () => {
         <div>Last Name: {userInfo.last_name}</div>
         <div>Phone Number: {userInfo.phone_number}</div>
       </div>
+      <button onClick={handleEditClick}>Edit</button>
 
-      <div>
-        <h2>{isCourier ? "Vehicle Info" : "Address Info"}</h2>
-        {isCourier ? (
-          <>
-            <div>License Plate: {userInfo.Courier?.vehicle.license_plate}</div>
-            <div>Model: {userInfo.Courier?.vehicle.model}</div>
-            <div>Transport Type: {userInfo.Courier?.vehicle.transport_type}</div>
-            <div>Company Owned: {userInfo.Courier?.vehicle.is_company_owner ? "Yes" : "No"}</div>
-          </>
-        ) : (
-          <>
-            <div>Country: {displayValue(userInfo.Client?.address?.country)}</div>
-            <div>City: {displayValue(userInfo.Client?.address?.city)}</div>
-            <div>Street: {displayValue(userInfo.Client?.address?.street_name)}</div>
-            <div>Building: {displayValue(userInfo.Client?.address?.building_number)}</div>
-            <div>Apartment: {displayValue(userInfo.Client?.address?.apartment_number)}</div>
-          </>
+      {!isAdmin && (
+        <div>
+          <h2>{isCourier ? "Vehicle Info" : "Address Info"}</h2>
+          {isCourier ? (
+            <>
+              <div>License Plate: {userInfo.Courier?.vehicle.license_plate}</div>
+              <div>Model: {userInfo.Courier?.vehicle.model}</div>
+              <div>Transport Type: {userInfo.Courier?.vehicle.transport_type}</div>
+              <div>Company Owned: {userInfo.Courier?.vehicle.is_company_owner ? "Yes" : "No"}</div>
+            </>
+          ) : (
+            <>
+              <div>Country: {displayValue(userInfo.Client?.address?.country)}</div>
+              <div>City: {displayValue(userInfo.Client?.address?.city)}</div>
+              <div>Street: {displayValue(userInfo.Client?.address?.street_name)}</div>
+              <div>Building: {displayValue(userInfo.Client?.address?.building_number)}</div>
+              <div>Apartment: {displayValue(userInfo.Client?.address?.apartment_number)}</div>
+            </>
+          )}
 
-        )}
-        <button onClick={handleEditClick}>Edit</button>
+          <UserDeliveriesSection userInfo={userInfo} isCourier={isCourier} />
+          <UserFeedbacksSection userInfo={userInfo} isCourier={isCourier} />
+          <UserScheduleSection userInfo={userInfo} isCourier={isCourier} />
+        </div>
+      )}
 
-        <UserDeliveriesSection userInfo={userInfo} isCourier={isCourier} />
-        <UserFeedbacksSection userInfo={userInfo} isCourier={isCourier} />
-        <UserScheduleSection userInfo={userInfo} isCourier={isCourier} />
-      </div>
 
       <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)} onOK={handleUserUpdate}>
         <UserForm selectedUser={editDraft} setSelectedUser={setEditDraft} />

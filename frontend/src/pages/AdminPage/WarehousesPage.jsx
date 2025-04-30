@@ -8,6 +8,7 @@ import { normalizeWarehouseData, normalizeAddressData } from '../../utils/dataNo
 import Table from '../../components/Table';
 import Modal from '../../components/Modal';
 import WarehouseForm from '../../components/forms/WarehouseForm';
+import Pagination from '../../components/Pagination'
 
 const WarehousesPage = () => {
   const [page, setPage] = useState(1);
@@ -176,21 +177,7 @@ const WarehousesPage = () => {
       </button>
 
       <Table data={formattedWarehouses} columns={warehouseColumns} />
-      <div style={{ marginTop: '20px' }}>
-        <button
-          onClick={() => setPage(prev => Math.max(prev - 1, 1))}
-          disabled={page === 1}
-        >
-          Prev
-        </button>
-        <span style={{ margin: '0 10px' }}>Page {page} of {totalPages}</span>
-        <button
-          onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
-          disabled={page === totalPages}
-        >
-          Next
-        </button>
-      </div>
+      <Pagination page={page} totalPages={totalPages} setPage={setPage} />
 
       {modalOpen && (
         <Modal open={modalOpen} onClose={handleModalClose} onOK={handleModalOK}>

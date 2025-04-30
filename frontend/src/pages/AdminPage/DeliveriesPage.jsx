@@ -11,6 +11,7 @@ import { normalizeOrderData, normalizeDeliveryData, normalizeWarehouseData, norm
 import Table from '../../components/Table'
 import Modal from '../../components/Modal'
 import DeliveryForm from '../../components/forms/DeliveryForm';
+import Pagination from '../../components/Pagination'
 
 const DeliveriesPage = () => {
   const [page, setPage] = useState(1);
@@ -171,7 +172,7 @@ const DeliveriesPage = () => {
   ];
   return (
     <div>
-      <h1>Admin - Deliveries</h1>
+      <h1>Deliveries</h1>
       <div className='filters'>
         <select name="deliveryStatus" onChange={handleFilterChange} value={formState.deliveryStatus}>
           <option value="">All Statuses</option>
@@ -208,21 +209,7 @@ const DeliveriesPage = () => {
       </button>
 
       <Table data={formattedDeliveries} columns={deliveryColumns} />
-      <div style={{ marginTop: '20px' }}>
-        <button
-          onClick={() => setPage(prev => Math.max(prev - 1, 1))}
-          disabled={page === 1}
-        >
-          Prev
-        </button>
-        <span style={{ margin: '0 10px' }}>Page {page} of {totalPages}</span>
-        <button
-          onClick={() => setPage(prev => Math.min(prev + 1, totalPages))}
-          disabled={page === totalPages}
-        >
-          Next
-        </button>
-      </div>
+      <Pagination page={page} totalPages={totalPages} setPage={setPage} />
 
       {modalOpen && (
         <Modal open={modalOpen} onClose={handleModalClose} onOK={handleModalOK}>

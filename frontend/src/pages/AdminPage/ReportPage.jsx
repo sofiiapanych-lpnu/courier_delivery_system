@@ -4,8 +4,13 @@ import { courierService } from '../../api/courierService';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid, ResponsiveContainer, Line, LineChart, ComposedChart } from 'recharts';
 import Modal from '../../components/Modal'
 import { formatDelivery } from '../../utils/formatters'
+import Pagination from '../../components/Pagination'
 
 const ReportPage = () => {
+  const [page, setPage] = useState(1);
+  const limit = 5;
+  const [totalPages, setTotalPages] = useState(0);
+
   const [reportData, setReportData] = useState([]);
   const [filters, setFilters] = useState({
     startDate: '',
@@ -17,6 +22,10 @@ const ReportPage = () => {
   const [couriers, setCouriers] = useState([]);
   const [selectedCourierDeliveries, setSelectedCourierDeliveries] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    fetchReportData();
+  }, [filters, page]);
 
   const fetchCouriers = async () => {
     try {
@@ -35,9 +44,13 @@ const ReportPage = () => {
       endDate: filters.endDate ? new Date(filters.endDate) : undefined,
       courierId: filters.courierId ? Number(filters.courierId) : undefined,
       groupBy: filters.groupBy,
+      page,
+      limit,
     })
       .then((res) => {
-        setReportData(res.data);
+        console.log(res)
+        setReportData(res.data.items);
+        setTotalPages(res.data.meta.totalPages);
         setLoading(false);
       })
       .catch((err) => {
@@ -67,7 +80,7 @@ const ReportPage = () => {
       groupBy: 'all',
     });
   };
-
+  console.log(reportData)
   const handleOpenModal = (deliveries) => {
     setSelectedCourierDeliveries(deliveries);
     setIsModalOpen(true);
@@ -99,7 +112,7 @@ const ReportPage = () => {
   ];
 
   const formattedDeliveries = selectedCourierDeliveries.map(formatDelivery);
-  console.log('formattedDeliveries', formattedDeliveries)
+
   const deliveryColumns = [
     { header: 'Delivery ID', accessor: 'delivery_id' },
     { header: 'Warehouse', accessor: 'warehouse' },
@@ -158,6 +171,7 @@ const ReportPage = () => {
       ) : (
         <>
           <Table data={flattenedReportData} columns={columns} />
+          <Pagination page={page} totalPages={totalPages} setPage={setPage} />
 
           <ResponsiveContainer width="100%" height={500}>
             <ComposedChart

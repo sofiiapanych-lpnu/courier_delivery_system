@@ -1,12 +1,12 @@
-const Card = ({ title, description, details, buttonText, onButtonClick }) => {
-  return (
-    <div>
-      <div>
-        <h2 >{title}</h2>
-        {description && <p >{description}</p>}
+import styles from './Card.module.css'
 
+const Card = ({ title, details, buttonText, onButtonClick }) => {
+  return (
+    <div className={styles.card}>
+      <div className={styles.cardLeft}>
+        <h2 className={styles.cardTitle}>{title}</h2>
         {details && (
-          <div>
+          <div className={styles.cardDetails}>
             {Object.entries(details).map(([label, value]) => (
               <p key={label}><strong>{label}:</strong> {value}</p>
             ))}
@@ -14,13 +14,13 @@ const Card = ({ title, description, details, buttonText, onButtonClick }) => {
         )}
       </div>
 
-      {buttonText && (
-        <button
-          onClick={onButtonClick}
-        >
-          {buttonText}
-        </button>
-      )}
+      <div className={styles.cardRight}>
+        {buttonText && (
+          <button onClick={onButtonClick} className={styles.cardButton}>
+            {buttonText}
+          </button>
+        )}
+      </div>
     </div>
   );
 };

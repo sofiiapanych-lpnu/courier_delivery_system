@@ -1,0 +1,18 @@
+.layoutContainer {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.contentWithSidebar {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.mainContent {
+  flex: 1;
+  padding: 32px;
+  padding-top: 95px;
+  transition: all 0.3s ease;
+}
