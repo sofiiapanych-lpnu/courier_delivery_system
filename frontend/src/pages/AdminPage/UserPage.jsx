@@ -12,6 +12,8 @@ import { clientService } from '../../api/clientService';
 import { vehicleService } from '../../api/vehicleService';
 import { courierService } from '../../api/courierService';
 import Pagination from '../../components/Pagination'
+import ActionButton from '../../components/ActionButton'
+import './filters.css';
 
 const UsersPage = () => {
   const [page, setPage] = useState(1);
@@ -156,8 +158,6 @@ const UsersPage = () => {
     }
   };
 
-  //console.log('users', users)
-
   const formatedUsers = users.map(formatUsers);
 
   const userColumns = [
@@ -171,84 +171,136 @@ const UsersPage = () => {
     { header: 'Updated At', accessor: 'updated_at' },
     {
       header: 'Actions', accessor: 'actions', cell: ({ row }) => (
-        <>
-          <button onClick={() => handleEditUser(row.user_id)}>Edit</button>
-          <button onClick={() => handleDeleteUser(row.user_id)} style={{ marginLeft: '10px' }}>Delete</button>
-        </>
+        <div className="actionsWrapper">
+          <ActionButton
+            variant="edit"
+            onClick={() => handleEditUser(row.user_id)}>
+            Edit
+          </ActionButton>
+          <ActionButton
+            variant="delete"
+            onClick={() => handleDeleteUser(row.user_id)} style={{ marginLeft: '10px' }}
+          >
+            Delete
+          </ActionButton>
+        </div>
       )
     }
   ];
-  //console.log('selectedUser ___', selectedUser)
 
   return (
     <div>
-      <h1>Admin - Users</h1>
-      <div className='filters'>
-        <input
-          name="name"
-          onChange={handleFilterChange}
-          placeholder="User Name"
-          value={formState.name}
-        />
-        <input
-          name="email"
-          onChange={handleFilterChange}
-          placeholder="Email"
-          value={formState.email}
-        />
-        <select
-          name="role"
-          onChange={handleFilterChange}
-          value={formState.role}
-        >
-          <option value="">All Roles</option>
-          <option value="admin">Admin</option>
-          <option value="courier">Courier</option>
-          <option value="client">Client</option>
-        </select>
+      <h1>Users</h1>
+      <div className="filters">
 
-        <input
-          name="addressQuery"
-          onChange={handleFilterChange}
-          placeholder="Address"
-          value={formState.addressQuery}
-        />
+        <div className="filter-section">
+          <div className="filter-group">
+            <label>User Name</label>
+            <input
+              name="name"
+              onChange={handleFilterChange}
+              placeholder="e.g. Alice Smith"
+              value={formState.name}
+            />
+          </div>
 
-        <input
-          name="vehicleQuery"
-          onChange={handleFilterChange}
-          placeholder="Vehicle License Plate"
-          value={formState.vehicleQuery}
-        />
+          <div className="filter-group">
+            <label>Email</label>
+            <input
+              name="email"
+              onChange={handleFilterChange}
+              placeholder="e.g. alice@example.com"
+              value={formState.email}
+            />
+          </div>
 
-        <input
-          name="startCreatedAt"
-          type="datetime-local"
-          onChange={handleFilterChange}
-          value={formState.startCreatedAt}
-        />
-        <input
-          name="endCreatedAt"
-          type="datetime-local"
-          onChange={handleFilterChange}
-          value={formState.endCreatedAt}
-        />
+          <div className="filter-group">
+            <label>Role</label>
+            <select
+              name="role"
+              onChange={handleFilterChange}
+              value={formState.role}
+            >
+              <option value="">All Roles</option>
+              <option value="admin">Admin</option>
+              <option value="courier">Courier</option>
+              <option value="client">Client</option>
+            </select>
+          </div>
+        </div>
 
-        <input
-          name="startUpdatedAt"
-          type="datetime-local"
-          onChange={handleFilterChange}
-          value={formState.startUpdatedAt}
-        />
-        <input
-          name="endUpdatedAt"
-          type="datetime-local"
-          onChange={handleFilterChange}
-          value={formState.endUpdatedAt}
-        />
+        <div className="filter-section">
+          <div className="filter-group">
+            <label>Address</label>
+            <input
+              name="addressQuery"
+              onChange={handleFilterChange}
+              placeholder="e.g. 221B Baker Street"
+              value={formState.addressQuery}
+            />
+          </div>
 
-        <button onClick={handleClearFilters}>Clear Filters</button>
+          <div className="filter-group">
+            <label>Vehicle License Plate</label>
+            <input
+              name="vehicleQuery"
+              onChange={handleFilterChange}
+              placeholder="e.g. ABC-1234"
+              value={formState.vehicleQuery}
+            />
+          </div>
+        </div>
+
+        <div className="filter-section">
+          <div className="filter-group">
+            <label>Created From</label>
+            <input
+              name="startCreatedAt"
+              type="datetime-local"
+              onChange={handleFilterChange}
+              value={formState.startCreatedAt}
+            />
+          </div>
+
+          <div className="filter-group">
+            <label>Created To</label>
+            <input
+              name="endCreatedAt"
+              type="datetime-local"
+              onChange={handleFilterChange}
+              value={formState.endCreatedAt}
+            />
+          </div>
+        </div>
+
+        <div className="filter-section">
+          <div className="filter-group">
+            <label>Updated From</label>
+            <input
+              name="startUpdatedAt"
+              type="datetime-local"
+              onChange={handleFilterChange}
+              value={formState.startUpdatedAt}
+            />
+          </div>
+
+          <div className="filter-group">
+            <label>Updated To</label>
+            <input
+              name="endUpdatedAt"
+              type="datetime-local"
+              onChange={handleFilterChange}
+              value={formState.endUpdatedAt}
+            />
+          </div>
+        </div>
+
+        <div className="filter-buttons">
+          <button onClick={handleClearFilters}>Clear Filters</button>
+        </div>
+
       </div>
+
 
       <Table data={formatedUsers} columns={userColumns} />
       <Pagination page={page} totalPages={totalPages} setPage={setPage} />

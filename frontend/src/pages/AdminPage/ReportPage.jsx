@@ -5,6 +5,8 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid, Responsive
 import Modal from '../../components/Modal'
 import { formatDelivery } from '../../utils/formatters'
 import Pagination from '../../components/Pagination'
+import ActionButton from '../../components/ActionButton'
+import './filters.css';
 
 const ReportPage = () => {
   const [page, setPage] = useState(1);
@@ -106,7 +108,11 @@ const ReportPage = () => {
       header: 'Details',
       accessor: 'courierId',
       cell: ({ row }) => (
-        <button onClick={() => { console.log(row); handleOpenModal(row.deliveries) }}>Deliveries</button>
+        <ActionButton
+          onClick={() => { console.log(row); handleOpenModal(row.deliveries) }}
+        >
+          Deliveries
+        </ActionButton>
       )
     }
   ];

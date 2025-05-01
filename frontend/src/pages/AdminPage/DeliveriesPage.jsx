@@ -12,6 +12,8 @@ import Table from '../../components/Table'
 import Modal from '../../components/Modal'
 import DeliveryForm from '../../components/forms/DeliveryForm';
 import Pagination from '../../components/Pagination'
+import ActionButton from '../../components/ActionButton'
+import './filters.css';
 
 const DeliveriesPage = () => {
   const [page, setPage] = useState(1);
@@ -162,51 +164,108 @@ const DeliveriesPage = () => {
       header: 'Actions',
       accessor: 'actions',
       cell: ({ row }) => (
-        <>
-          <button onClick={() => handleEditDelivery(row.delivery_id)}>Edit</button>
-          <button onClick={() => handleDeleteDelivery(row.delivery_id)} style={{ marginLeft: '10px' }}>Delete</button>
-        </>
+        <div className="actionsWrapper">
+          <ActionButton
+            variant="edit"
+            onClick={() => handleEditDelivery(row.delivery_id)}
+          >
+            Edit
+          </ActionButton>
+          <ActionButton
+            variant="delete"
+            onClick={() => handleDeleteDelivery(row.delivery_id)}
+          >
+            Delete
+          </ActionButton>
+        </div>
       )
     }
-
   ];
   return (
     <div>
       <h1>Deliveries</h1>
-      <div className='filters'>
-        <select name="deliveryStatus" onChange={handleFilterChange} value={formState.deliveryStatus}>
-          <option value="">All Statuses</option>
-          <option value="pending">Pending</option>
-          <option value="in_progress">In Progress</option>
-          <option value="delivered">Delivered</option>
-        </select>
-        <select name="deliveryType" onChange={handleFilterChange} value={formState.deliveryType}>
-          <option value="">All Types</option>
-          <option value="express">Express</option>
-          <option value="standard">Standard</option>
-          <option value="overnight">Overnight</option>
-        </select>
-        <input name="orderTypeQuery" onChange={handleFilterChange} placeholder="Order Type" value={formState.orderTypeQuery} />
-        <input name="warehouseAddressQuery" onChange={handleFilterChange} placeholder="Warehouse Address" value={formState.warehouseAddressQuery} />
-        <input name="clientAddressQuery" onChange={handleFilterChange} placeholder="Client Address" value={formState.clientAddressQuery} />
-        <select name="paymentMethod" onChange={handleFilterChange} value={formState.paymentMethod}>
-          <option value="">All Payment Methods</option>
-          <option value="cash">Cash</option>
-          <option value="credit_card">Credit Card</option>
-          <option value="online">Online</option>
-        </select>
-        <input name="startTime" type="datetime-local" onChange={handleFilterChange} value={formState.startTime} />
-        <input name="endTime" type="datetime-local" onChange={handleFilterChange} value={formState.endTime} />
+      <div className="filters">
 
-        <button onClick={handleClearFilters}>Clear Filters</button>
+        <div className="filter-section">
+          <div className="filter-group">
+            <label>Delivery Status</label>
+            <select name="deliveryStatus" onChange={handleFilterChange} value={formState.deliveryStatus}>
+              <option value="">All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="in_progress">In Progress</option>
+              <option value="delivered">Delivered</option>
+            </select>
+          </div>
+
+          <div className="filter-group">
+            <label>Delivery Type</label>
+            <select name="deliveryType" onChange={handleFilterChange} value={formState.deliveryType}>
+              <option value="">All Types</option>
+              <option value="express">Express</option>
+              <option value="standard">Standard</option>
+              <option value="overnight">Overnight</option>
+            </select>
+          </div>
+
+          <div className="filter-group">
+            <label>Payment Method</label>
+            <select name="paymentMethod" onChange={handleFilterChange} value={formState.paymentMethod}>
+              <option value="">All Payment Methods</option>
+              <option value="cash">Cash</option>
+              <option value="credit_card">Credit Card</option>
+              <option value="online">Online</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="filter-section">
+          <div className="filter-group">
+            <label>Order Type</label>
+            <input
+              name="orderTypeQuery"
+              onChange={handleFilterChange}
+              placeholder="e.g. Furniture, Electronics"
+              value={formState.orderTypeQuery}
+            />
+          </div>
+
+          <div className="filter-group">
+            <label>Warehouse Address</label>
+            <input
+              name="warehouseAddressQuery"
+              onChange={handleFilterChange}
+              placeholder="e.g. 123 Main St, New York"
+              value={formState.warehouseAddressQuery}
+            />
+          </div>
+
+          <div className="filter-group">
+            <label>Client Address</label>
+            <input
+              name="clientAddressQuery"
+              onChange={handleFilterChange}
+              placeholder="e.g. 456 Oak Ave, Boston"
+              value={formState.clientAddressQuery}
+            />
+          </div>
+        </div>
+
+        <div className="filter-section">
+          <div className="filter-group">
+            <label>Start Time</label>
+            <input name="startTime" type="datetime-local" onChange={handleFilterChange} value={formState.startTime} />
+          </div>
+
+          <div className="filter-group">
+            <label>End Time</label>
+            <input name="endTime" type="datetime-local" onChange={handleFilterChange} value={formState.endTime} />
+          </div>
+        </div>
+
+        <div className="filter-section">
+          <button onClick={handleClearFilters}>Clear Filters</button>
+        </div>
       </div>
-      <button onClick={() => {
-        setSelectedDelivery(null);
-        setModalMode('create');
-        setModalOpen(true);
-      }}>
-        Create Delivery
-      </button>
 
       <Table data={formattedDeliveries} columns={deliveryColumns} />
       <Pagination page={page} totalPages={totalPages} setPage={setPage} />

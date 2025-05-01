@@ -9,6 +9,7 @@ import Table from '../../components/Table';
 import Modal from '../../components/Modal';
 import CourierScheduleForm from '../../components/forms/CourierScheduleForm';
 import Pagination from '../../components/Pagination'
+import './filters.css';
 
 const CourierSchedulePage = () => {
   const [page, setPage] = useState(1);
@@ -187,46 +188,69 @@ const CourierSchedulePage = () => {
       <h1>Courier Schedules</h1>
 
       <div className="filters">
-        <input
-          name="courierName"
-          onChange={handleFilterChange}
-          value={formState.courierName}
-          placeholder="Courier name or surname"
-        />
-        <select
-          name="scheduleStatus"
-          onChange={handleFilterChange}
-          value={formState.scheduleStatus}
-        >
-          <option value="">All statuses</option>
-          <option value="active">Active</option>
-          <option value="archived">Archived</option>
-        </select>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginTop: '10px' }}>
-          {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map(day => (
-            <div key={day}>
-              <strong>{day.charAt(0).toUpperCase() + day.slice(1)}</strong>
+        <div className='filter-section'>
+          <div>
+            <div className="filter-group">
+              <label>Courier Name</label>
               <input
-                name={`${day}Start`}
+                name="courierName"
                 onChange={handleFilterChange}
-                value={formState[`${day}Start`]}
-                type="time"
-              />
-              <input
-                name={`${day}End`}
-                onChange={handleFilterChange}
-                value={formState[`${day}End`]}
-                type="time"
+                value={formState.courierName}
+                placeholder="e.g. John Doe"
               />
             </div>
-          ))}
+
+            <div className="filter-group">
+              <label>Schedule Status</label>
+              <select
+                name="scheduleStatus"
+                onChange={handleFilterChange}
+                value={formState.scheduleStatus}
+              >
+                <option value="">All statuses</option>
+                <option value="active">Active</option>
+                <option value="archived">Archived</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div className="filter-section">
+          <div className="filter-group">
+            <div style={{ display: 'flex', gap: '10px' }}>
+              {['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map(day => (
+                <div key={day}>
+                  <strong>{day.charAt(0).toUpperCase() + day.slice(1)}</strong>
+                  <div>
+                    <input
+                      name={`${day}Start`}
+                      onChange={handleFilterChange}
+                      value={formState[`${day}Start`]}
+                      type="time"
+                    />
+                  </div>
+                  <div>
+                    <input
+                      name={`${day}End`}
+                      onChange={handleFilterChange}
+                      value={formState[`${day}End`]}
+                      type="time"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
-        <button onClick={handleClearFilters}>Clear Filters</button>
+        <div className="filter-section">
+          <button onClick={handleClearFilters}>Clear Filters</button>
+        </div>
       </div>
 
+
+
       <button
+        className="create-btn"
         style={{ marginBottom: '10px' }}
         onClick={() => {
           const defaultWeekSchedule = Array.from({ length: 7 }, (_, i) => ({

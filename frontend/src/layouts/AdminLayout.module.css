@@ -13,6 +13,6 @@
 .mainContent {
   flex: 1;
   padding: 32px;
-  padding-top: 95px;
+  padding-top: 50px;
   transition: all 0.3s ease;
 }

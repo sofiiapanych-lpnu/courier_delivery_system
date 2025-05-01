@@ -10,6 +10,8 @@ import Modal from '../../components/Modal';
 import OrderForm from '../../components/forms/OrderForm';
 import { Slider, Box } from '@mui/material';
 import Pagination from '../../components/Pagination'
+import ActionButton from '../../components/ActionButton'
+import './filters.css';
 
 const OrdersPage = () => {
   const [page, setPage] = useState(1);
@@ -118,6 +120,16 @@ const OrdersPage = () => {
     });
   };
 
+  const handleInputChange = (name, value) => {
+    handleFilterChange({
+      target: {
+        name,
+        value: Number(value),
+      },
+    });
+  };
+
+
   console.log(orders)
   const formattedOrders = orders.map(formatOrder);
 
@@ -136,159 +148,283 @@ const OrdersPage = () => {
       header: 'Actions',
       accessor: 'actions',
       cell: ({ row }) => (
-        <>
-          <button onClick={() => handleEditOrder(row.order_id)}>Edit</button>
-          <button onClick={() => handleDeleteOrder(row.order_id)} style={{ marginLeft: '10px' }}>Delete</button>
-        </>
+        <div className="actionsWrapper">
+          <ActionButton
+            variant="edit"
+            onClick={() => handleEditOrder(row.order_id)}
+          >
+            Edit
+          </ActionButton>
+          <ActionButton
+            variant="delete"
+            onClick={() => handleDeleteOrder(row.order_id)}
+          >
+            Delete
+          </ActionButton>
+        </div>
       )
     }
   ];
 
   return (
     <div>
-      <h1>Admin - Orders</h1>
-      <div className='filters'>
-        <input
-          name="orderType"
-          onChange={handleFilterChange}
-          placeholder="Order Type"
-          value={formState.orderType}
-        />
-        <input
-          name="description"
-          onChange={handleFilterChange}
-          placeholder="Description"
-          value={formState.description}
-        />
+      <h1>Orders</h1>
+      <div className="filters">
+        <div className="filter-section">
+          <div className="filter-group">
+            <label>Order Type</label>
+            <input
+              name="orderType"
+              onChange={handleFilterChange}
+              placeholder="e.g. Electronics, Furniture"
+              value={formState.orderType}
+            />
+          </div>
 
-        <Box sx={{ width: 50, marginTop: 2 }}>
-          <label>Cost Range</label>
-          <Slider
-            value={[formState.minCost, formState.maxCost]}
-            onChange={(e, newValue) => handleSliderChange('Cost', newValue)}
-            valueLabelDisplay="auto"
-            min={initialFormState.minCost}
-            max={initialFormState.maxCost}
-            sx={{
-              '& .MuiSlider-thumb': {
-                width: 13,
-                height: 13,
-                backgroundColor: 'primary.main',
-              }
-            }}
-          />
-        </Box>
+          <div className="filter-group">
+            <label>Description</label>
+            <input
+              name="description"
+              onChange={handleFilterChange}
+              placeholder="e.g. Fragile items, Large package"
+              value={formState.description}
+            />
+          </div>
 
-        <Box sx={{ width: 50, marginTop: 2 }}>
-          <label>Weight Range</label>
-          <Slider
-            value={[formState.minWeight, formState.maxWeight]}
-            onChange={(e, newValue) => handleSliderChange('Weight', newValue)}
-            valueLabelDisplay="auto"
-            min={initialFormState.minWeight}
-            max={initialFormState.maxWeight}
-            sx={{
-              '& .MuiSlider-thumb': {
-                width: 13,
-                height: 13,
-                backgroundColor: 'primary.main',
-              }
-            }}
-          />
-        </Box>
+          <div className="filter-group">
+            <label>Payment Method</label>
+            <select
+              name="paymentMethod"
+              onChange={handleFilterChange}
+              value={formState.paymentMethod}
+            >
+              <option value="">All Payment Methods</option>
+              <option value="cash">Cash</option>
+              <option value="credit_card">Credit Card</option>
+              <option value="online">Online</option>
+            </select>
+          </div>
+        </div>
 
-        <Box sx={{ width: 50, marginTop: 2 }}>
-          <label>Height Range</label>
-          <Slider
-            value={[formState.minHeight, formState.maxHeight]}
-            onChange={(e, newValue) => handleSliderChange('Height', newValue)}
-            valueLabelDisplay="auto"
-            min={initialFormState.minHeight}
-            max={initialFormState.maxHeight}
-            sx={{
-              '& .MuiSlider-thumb': {
-                width: 13,
-                height: 13,
-                backgroundColor: 'primary.main',
-              }
-            }}
-          />
-        </Box>
+        <div className='filter-section'>
+          <div className="filter-group">
+            <label>Cost Range</label>
+            <div className="slider-input-container">
+              <input
+                type="number"
+                value={formState.minCost}
+                onChange={(e) => handleInputChange('minCost', e.target.value)}
+                placeholder="Min"
+              />
+              <Box sx={{ width: 100, marginTop: 2 }}>
+                <Slider
+                  value={[formState.minCost, formState.maxCost]}
+                  onChange={(e, newValue) => handleSliderChange('Cost', newValue)}
+                  valueLabelDisplay="auto"
+                  min={initialFormState.minCost}
+                  max={initialFormState.maxCost}
+                  sx={{
+                    flex: 1,
+                    '& .MuiSlider-thumb': {
+                      width: 13,
+                      height: 13,
+                      backgroundColor: 'primary.main',
+                    }
+                  }}
+                />
+              </Box>
+              <input
+                type="number"
+                value={formState.maxCost}
+                onChange={(e) => handleInputChange('maxCost', e.target.value)}
+                placeholder="Max"
+              />
+            </div>
+          </div>
 
-        <Box sx={{ width: 50, marginTop: 2 }}>
-          <label>Length Range</label>
-          <Slider
-            value={[formState.minLength, formState.maxLength]}
-            onChange={(e, newValue) => handleSliderChange('Length', newValue)}
-            valueLabelDisplay="auto"
-            min={initialFormState.minLength}
-            max={initialFormState.maxLength}
-            sx={{
-              '& .MuiSlider-thumb': {
-                width: 13,
-                height: 13,
-                backgroundColor: 'primary.main',
-              }
-            }}
-          />
-        </Box>
+          <div className="filter-group">
+            <label>Weight Range</label>
+            <div className="slider-input-container">
+              <input
+                type="number"
+                value={formState.minWeight}
+                onChange={(e) => handleInputChange('minWeight', e.target.value)}
+                placeholder="Min"
+              />
+              <Slider
+                value={[formState.minWeight, formState.maxWeight]}
+                onChange={(e, newValue) => handleSliderChange('Weight', newValue)}
+                valueLabelDisplay="auto"
+                min={initialFormState.minWeight}
+                max={initialFormState.maxWeight}
+                sx={{
+                  flex: 1,
+                  '& .MuiSlider-thumb': {
+                    width: 13,
+                    height: 13,
+                    backgroundColor: 'primary.main',
+                  }
+                }}
+              />
+              <input
+                type="number"
+                value={formState.maxWeight}
+                onChange={(e) => handleInputChange('maxWeight', e.target.value)}
+                placeholder="Max"
+              />
+            </div>
+          </div>
+        </div>
 
-        <Box sx={{ width: 50, marginTop: 2 }}>
-          <label>Width Range</label>
-          <Slider
-            value={[formState.minWidth, formState.maxWidth]}
-            onChange={(e, newValue) => handleSliderChange('Width', newValue)}
-            valueLabelDisplay="auto"
-            min={initialFormState.minWidth}
-            max={initialFormState.maxWidth}
-            sx={{
-              '& .MuiSlider-thumb': {
-                width: 13,
-                height: 13,
-                backgroundColor: 'primary.main',
-              }
-            }}
-          />
-        </Box>
+        <div className="filter-section">
+          <div className="filter-group">
+            <label>Height Range</label>
+            <div className="slider-input-container">
+              <input
+                type="number"
+                value={formState.minHeight}
+                onChange={(e) => handleInputChange('minHeight', e.target.value)}
+                placeholder="Min"
+              />
+              <Box sx={{ width: 100, marginTop: 2 }}>
+                <Slider
+                  value={[formState.minHeight, formState.maxHeight]}
+                  onChange={(e, newValue) => handleSliderChange('Height', newValue)}
+                  valueLabelDisplay="auto"
+                  min={initialFormState.minHeight}
+                  max={initialFormState.maxHeight}
+                  sx={{
+                    flex: 1,
+                    '& .MuiSlider-thumb': {
+                      width: 13,
+                      height: 13,
+                      backgroundColor: 'primary.main',
+                    }
+                  }}
+                />
+              </Box>
+              <input
+                type="number"
+                value={formState.maxHeight}
+                onChange={(e) => handleInputChange('maxHeight', e.target.value)}
+                placeholder="Max"
+              />
+            </div>
+          </div>
 
-        <select
-          name="paymentMethod"
-          onChange={handleFilterChange}
-          value={formState.paymentMethod}
-        >
-          <option value="">All Payment Methods</option>
-          <option value="cash">Cash</option>
-          <option value="credit_card">Credit Card</option>
-          <option value="online">Online</option>
-        </select>
+          <div className="filter-group">
+            <label>Length Range</label>
+            <div className="slider-input-container">
+              <input
+                type="number"
+                value={formState.minLength}
+                onChange={(e) => handleInputChange('minLength', e.target.value)}
+                placeholder="Min"
+              />
+              <Slider
+                value={[formState.minLength, formState.maxLength]}
+                onChange={(e, newValue) => handleSliderChange('Length', newValue)}
+                valueLabelDisplay="auto"
+                min={initialFormState.minLength}
+                max={initialFormState.maxLength}
+                sx={{
+                  flex: 1,
+                  '& .MuiSlider-thumb': {
+                    width: 13,
+                    height: 13,
+                    backgroundColor: 'primary.main',
+                  }
+                }}
+              />
+              <input
+                type="number"
+                value={formState.maxLength}
+                onChange={(e) => handleInputChange('maxLength', e.target.value)}
+                placeholder="Max"
+              />
+            </div>
+          </div>
 
-        <input
-          name="startCreatedAt"
-          type="datetime-local"
-          onChange={handleFilterChange}
-          value={formState.startCreatedAt}
-        />
-        <input
-          name="endCreatedAt"
-          type="datetime-local"
-          onChange={handleFilterChange}
-          value={formState.endCreatedAt}
-        />
-        <input
-          name="startUpdatedAt"
-          type="datetime-local"
-          onChange={handleFilterChange}
-          value={formState.startUpdatedAt}
-        />
-        <input
-          name="endUpdatedAt"
-          type="datetime-local"
-          onChange={handleFilterChange}
-          value={formState.endUpdatedAt}
-        />
+          <div className="filter-group">
+            <label>Width Range</label>
+            <div className="slider-input-container">
+              <input
+                type="number"
+                value={formState.minWidth}
+                onChange={(e) => handleInputChange('minWidth', e.target.value)}
+                placeholder="Min"
+              />
+              <Slider
+                value={[formState.minWidth, formState.maxWidth]}
+                onChange={(e, newValue) => handleSliderChange('Width', newValue)}
+                valueLabelDisplay="auto"
+                min={initialFormState.minWidth}
+                max={initialFormState.maxWidth}
+                sx={{
+                  flex: 1,
+                  '& .MuiSlider-thumb': {
+                    width: 13,
+                    height: 13,
+                    backgroundColor: 'primary.main',
+                  }
+                }}
+              />
+              <input
+                type="number"
+                value={formState.maxWidth}
+                onChange={(e) => handleInputChange('maxWidth', e.target.value)}
+                placeholder="Max"
+              />
+            </div>
+          </div>
+        </div>
 
-        <button onClick={handleClearFilters}>Clear Filters</button>
+        <div className="filter-section">
+          <div className="filter-group">
+            <label>Created At (Start)</label>
+            <input
+              name="startCreatedAt"
+              type="datetime-local"
+              onChange={handleFilterChange}
+              value={formState.startCreatedAt}
+            />
+          </div>
+          <div className="filter-group">
+            <label>Created At (End)</label>
+            <input
+              name="endCreatedAt"
+              type="datetime-local"
+              onChange={handleFilterChange}
+              value={formState.endCreatedAt}
+            />
+          </div>
+        </div>
+        <div className="filter-section">
+          <div className="filter-group">
+            <label>Updated At (Start)</label>
+            <input
+              name="startUpdatedAt"
+              type="datetime-local"
+              onChange={handleFilterChange}
+              value={formState.startUpdatedAt}
+            />
+          </div>
+          <div className="filter-group">
+            <label>Updated At (End)</label>
+            <input
+              name="endUpdatedAt"
+              type="datetime-local"
+              onChange={handleFilterChange}
+              value={formState.endUpdatedAt}
+            />
+          </div>
+        </div>
+
+        <div className="filter-section">
+          <button onClick={handleClearFilters}>Clear Filters</button>
+        </div>
       </div>
+
 
       <Table data={formattedOrders} columns={orderColumns} />
       <Pagination page={page} totalPages={totalPages} setPage={setPage} />

@@ -9,6 +9,8 @@ import Table from '../../components/Table';
 import Modal from '../../components/Modal';
 import VehicleForm from '../../components/forms/VehicleForm';
 import Pagination from '../../components/Pagination'
+import ActionButton from '../../components/ActionButton'
+import './filters.css';
 
 const VehiclesPage = () => {
   const [page, setPage] = useState(1);
@@ -129,8 +131,6 @@ const VehiclesPage = () => {
     }
 
   };
-  console.log('vehicles', vehicles)
-  console.log('couriers', couriers)
 
   const vehicleColumns = [
     { header: 'License Plate', accessor: 'license_plate' },
@@ -152,51 +152,78 @@ const VehiclesPage = () => {
       header: 'Actions',
       accessor: 'actions',
       cell: ({ row }) => (
-        <>
-          <button onClick={() => handleEditVehicle(row.license_plate)}>Edit</button>
-          <button onClick={() => handleDeleteVehicle(row.license_plate)} style={{ marginLeft: '10px' }}>Delete</button>
-        </>
+        <div className="actionsWrapper">
+          <ActionButton
+            variant="edit"
+            onClick={() => handleEditVehicle(row.license_plate)}
+          >
+            Edit
+          </ActionButton>
+          <ActionButton
+            variant="delete"
+            onClick={() => handleDeleteVehicle(row.license_plate)}>
+            Delete
+          </ActionButton>
+        </div>
       )
     }
   ];
 
   return (
     <div>
-      <h1>Admin - Vehicles</h1>
+      <h1>Vehicles</h1>
       <div className='filters'>
-        <input
-          name="licensePlate"
-          onChange={handleFilterChange}
-          placeholder="License Plate"
-          value={formState.licensePlate}
-        />
-        <input
-          name="model"
-          onChange={handleFilterChange}
-          placeholder="Model"
-          value={formState.model}
-        />
-        <select
-          name="transportType"
-          onChange={handleFilterChange}
-          value={formState.transportType}
-        >
-          <option value="">Select Transport Type</option>
-          <option value="car">Car</option>
-          <option value="truck">Truck</option>
-          <option value="motorcycle">Motorcycle</option>
-        </select>
+        <div className="filter-group">
+          <label htmlFor="licensePlate">License Plate</label>
+          <input
+            id="licensePlate"
+            name="licensePlate"
+            onChange={handleFilterChange}
+            placeholder="e.g. ABC-1234"
+            value={formState.licensePlate}
+          />
+        </div>
 
-        <button onClick={handleClearFilters}>Clear Filters</button>
+        <div className="filter-group">
+          <label htmlFor="model">Model</label>
+          <input
+            id="model"
+            name="model"
+            onChange={handleFilterChange}
+            placeholder="e.g. Toyota Corolla"
+            value={formState.model}
+          />
+        </div>
+
+        <div className="filter-group">
+          <label htmlFor="transportType">Transport Type</label>
+          <select
+            id="transportType"
+            name="transportType"
+            onChange={handleFilterChange}
+            value={formState.transportType}
+          >
+            <option value="">Select Transport Type</option>
+            <option value="car">Car</option>
+            <option value="truck">Truck</option>
+            <option value="motorcycle">Motorcycle</option>
+          </select>
+        </div>
+
+        <div className="filter-section">
+          <button onClick={handleClearFilters}>Clear Filters</button>
+        </div>
       </div>
+
       <button
+        className="create-btn"
         onClick={() => {
           setSelectedVehicle(null);
           setModalMode('create');
           setModalOpen(true);
         }}
       >
-        Add Vehicle
+        Create Vehicle
       </button>
 
       <Table data={vehicles} columns={vehicleColumns} />

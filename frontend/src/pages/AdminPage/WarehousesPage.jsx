@@ -9,6 +9,8 @@ import Table from '../../components/Table';
 import Modal from '../../components/Modal';
 import WarehouseForm from '../../components/forms/WarehouseForm';
 import Pagination from '../../components/Pagination'
+import ActionButton from '../../components/ActionButton'
+import './filters.css';
 
 const WarehousesPage = () => {
   const [page, setPage] = useState(1);
@@ -124,10 +126,20 @@ const WarehousesPage = () => {
       header: 'Actions',
       accessor: 'actions',
       cell: ({ row }) => (
-        <>
-          <button onClick={() => handleEditWarehouse(row.warehouse_id)}>Edit</button>
-          <button onClick={() => handleDeleteWarehouse(row.warehouse_id)} style={{ marginLeft: '10px' }}>Delete</button>
-        </>
+        <div className="actionsWrapper">
+          <ActionButton
+            variant="edit"
+            onClick={() => handleEditWarehouse(row.warehouse_id)}
+          >
+            Edit
+          </ActionButton>
+          <ActionButton
+            variant="delete"
+            onClick={() => handleDeleteWarehouse(row.warehouse_id)}
+          >
+            Delete
+          </ActionButton>
+        </div>
       )
     }
   ];
@@ -136,43 +148,63 @@ const WarehousesPage = () => {
   console.log(selectedWarehouse)
   return (
     <div>
-      <h1>Admin - Warehouse</h1>
+      <h1>Warehouse</h1>
       <div className='filters'>
-        <input
-          name="name"
-          onChange={handleFilterChange}
-          placeholder="Warehouse Name"
-          value={formState.name}
-        />
-        <input
-          name="address"
-          onChange={handleFilterChange}
-          placeholder="Address"
-          value={formState.address}
-        />
-        <input
-          name="contactNumber"
-          onChange={handleFilterChange}
-          placeholder="Contact number"
-          value={formState.contactNumber}
-        />
-        <button onClick={handleClearFilters}>Clear Filters</button>
+        <div className="filter-group">
+          <label htmlFor="name">Warehouse Name</label>
+          <input
+            id="name"
+            name="name"
+            onChange={handleFilterChange}
+            placeholder="e.g. Central Warehouse"
+            value={formState.name}
+          />
+        </div>
+
+        <div className="filter-group">
+          <label htmlFor="address">Address</label>
+          <input
+            id="address"
+            name="address"
+            onChange={handleFilterChange}
+            placeholder="e.g. 123 Main St, City"
+            value={formState.address}
+          />
+        </div>
+
+        <div className="filter-group">
+          <label htmlFor="contactNumber">Contact Number</label>
+          <input
+            id="contactNumber"
+            name="contactNumber"
+            onChange={handleFilterChange}
+            placeholder="e.g. +380123456789"
+            value={formState.contactNumber}
+          />
+        </div>
+
+        <div className="filter-section">
+          <button onClick={handleClearFilters}>Clear Filters</button>
+        </div>
       </div>
-      <button onClick={() => {
-        setSelectedWarehouse({
-          name: '',
-          contact_number: '',
-          address: {
-            country: '',
-            city: '',
-            street_name: '',
-            building_number: '',
-            apartment_number: ''
-          }
-        });
-        setModalMode('create');
-        setModalOpen(true);
-      }}>
+
+      <button
+        className="create-btn"
+        onClick={() => {
+          setSelectedWarehouse({
+            name: '',
+            contact_number: '',
+            address: {
+              country: '',
+              city: '',
+              street_name: '',
+              building_number: '',
+              apartment_number: ''
+            }
+          });
+          setModalMode('create');
+          setModalOpen(true);
+        }}>
         Create Warehouse
       </button>
 

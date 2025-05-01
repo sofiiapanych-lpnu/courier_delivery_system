@@ -1,0 +1,39 @@
+.button {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.button:active {
+  transform: scale(0.98);
+}
+
+.default {
+  background-color: #8595b5;
+  color: #fff;
+}
+
+.default:hover {
+  background-color: #61708d;
+}
+
+.edit {
+  background-color: #96a6c5;
+  color: #fff;
+}
+
+.edit:hover {
+  background-color: #8998b5;
+}
+
+.delete {
+  background-color: #c15757;
+  color: #fff;
+}
+
+.delete:hover {
+  background-color: #b15151;
+}

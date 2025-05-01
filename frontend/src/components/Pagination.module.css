@@ -8,18 +8,18 @@
 
 .pageButton {
   padding: 10px 20px;
-  background-color: #059669;
+  background-color: #435895;
   color: white;
   border: none;
   border-radius: 8px;
   cursor: pointer;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: bolder;
   transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .pageButton:hover:not(:disabled) {
-  background-color: #047857;
+  background-color: #374a81;
   transform: translateY(-1px);
 }
 

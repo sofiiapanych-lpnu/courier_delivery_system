@@ -8,6 +8,8 @@ import { useFilters } from '../../hooks/useFilters'
 import { formatFeedbacks } from '../../utils/formatters'
 import { normalizeFeedbackData } from '../../utils/dataNormalizers'
 import Pagination from '../../components/Pagination'
+import ActionButton from '../../components/ActionButton'
+import './filters.css';
 
 const FeedbacksPage = () => {
   const [page, setPage] = useState(1);
@@ -86,10 +88,18 @@ const FeedbacksPage = () => {
       header: 'Actions',
       accessor: 'actions',
       cell: ({ row }) => (
-        <>
-          <button onClick={() => handleEdit(row.feedback_id)}>Edit</button>
-          <button onClick={() => handleDelete(row.feedback_id)} style={{ marginLeft: '10px' }}>Delete</button>
-        </>
+        <div className="actionsWrapper">
+          <ActionButton
+            variant="edit"
+            onClick={() => handleEdit(row.feedback_id)}>
+            Edit
+          </ActionButton>
+          <ActionButton
+            variant="delete"
+            onClick={() => handleDelete(row.feedback_id)}>
+            Delete
+          </ActionButton>
+        </div>
       )
     }
   ];
@@ -98,67 +108,88 @@ const FeedbacksPage = () => {
     <div>
       <h1>Feedbacks</h1>
       <div className="filters">
-        <input
-          name="courierName"
-          onChange={handleFilterChange}
-          value={formState.courierName}
-          placeholder="Courier name or surname"
-        />
-        <input
-          name="clientName"
-          onChange={handleFilterChange}
-          value={formState.clientName}
-          placeholder="Courier name or surname"
-        />
-        <div style={{ marginBottom: '10px' }}>
-          <span>Rating: </span>
-          {[1, 2, 3, 4, 5].map((r) => (
-            <button
-              key={r}
-              onClick={() =>
-                handleFilterChange({
-                  target: {
-                    name: 'rating',
-                    value: formState.rating === r.toString() ? '' : r.toString(),
-                  },
-                })
-              }
-              style={{
-                marginRight: '5px',
-                backgroundColor: formState.rating === r.toString() ? '#007bff' : 'transparent',
-                color: formState.rating === r.toString() ? '#fff' : 'inherit',
-              }}
+        <div className="filter-section">
+          <div className="filter-group">
+            <label htmlFor="courierName">Courier Name</label>
+            <input
+              id="courierName"
+              name="courierName"
+              onChange={handleFilterChange}
+              placeholder="e.g. John Doe"
+              value={formState.courierName}
+            />
+          </div>
+          <div className="filter-group">
+            <label htmlFor="clientName">Client Name</label>
+            <input
+              id="clientName"
+              name="clientName"
+              onChange={handleFilterChange}
+              placeholder="e.g. Jane Smith"
+              value={formState.clientName}
+            />
+          </div>
+        </div>
+
+        <div className="filter-section">
+          <div className="filter-group">
+            <label>Rating:</label>
+            <div className="rating-buttons">
+              {[1, 2, 3, 4, 5].map((r) => (
+                <button
+                  key={r}
+                  onClick={() =>
+                    handleFilterChange({
+                      target: {
+                        name: 'rating',
+                        value: formState.rating === r.toString() ? '' : r.toString(),
+                      },
+                    })
+                  }
+                  className={`rating-button ${formState.rating === r.toString() ? 'active' : ''}`}
+                >
+                  {r}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="filter-section">
+          <div className="filter-group">
+            <label htmlFor="hasComment">Comment Presence</label>
+            <select
+              id="hasComment"
+              name="hasComment"
+              onChange={handleFilterChange}
+              value={formState.hasComment}
             >
-              {r}
-            </button>
-          ))}
-        </div>
-        <div>
-          <label>Comment presence:</label>
-          <select
-            name="hasComment"
-            onChange={handleFilterChange}
-            value={formState.hasComment}
-          >
-            <option value="">All</option>
-            <option value="true">With comment</option>
-            <option value="false">Without comment</option>
-          </select>
+              <option value="">All</option>
+              <option value="true">With Comment</option>
+              <option value="false">Without Comment</option>
+            </select>
+          </div>
+
+          <div className="filter-group">
+            <label htmlFor="comment">Comment</label>
+            <input
+              id="comment"
+              name="comment"
+              onChange={handleFilterChange}
+              placeholder="e.g. Everything alright"
+              value={formState.comment}
+            />
+          </div>
         </div>
 
-
-        <input
-          name="comment"
-          onChange={handleFilterChange}
-          placeholder="Comment"
-          value={formState.comment}
-        />
-        <button onClick={handleClearFilters}>Clear Filters</button>
+        <div className="filter-section">
+          <button onClick={handleClearFilters}>Clear Filters</button>
+        </div>
       </div>
+
+
       <Table data={formatedFeedbacks} columns={columns} />
-
       <Pagination page={page} totalPages={totalPages} setPage={setPage} />
-
 
       {modalOpen && (
         <Modal open={modalOpen} onClose={handleModalClose} onOK={handleModalOK}>

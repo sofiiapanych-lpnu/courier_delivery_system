@@ -1,0 +1,137 @@
+.filters {
+  padding: 0 50px;
+  display: flex;
+  margin-bottom: 20px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.filters input,
+.filters select {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.filters button {
+  padding: 8px 16px;
+  background-color: #c15757;
+  color: #fff;
+  font-weight: bolder;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.filters button:hover {
+  background-color: #ae4d4d;
+}
+
+.filters label {
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.filters .filter-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.filters .filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.filters .rating-buttons {
+  display: flex;
+  gap: 5px;
+}
+
+.filters .rating-button {
+  padding: 6px 10px;
+  background-color: transparent;
+  border: 1px solid #ccc;
+  color: inherit;
+  font-size: 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.filters .rating-button:hover {
+  background-color: #586ba4;
+  color: #fff;
+}
+
+.filters .rating-button.active {
+  background-color: #435895;
+  color: #fff;
+}
+
+.create-btn {
+  padding: 8px 16px;
+  background-color: #28a745;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: bolder;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.create-btn:hover {
+  background-color: #218838;
+}
+
+.create-btn:active {
+  transform: scale(0.98);
+}
+
+.slider-input-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.slider-input-container input {
+  width: 55px;
+}
+
+.filter-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.filter-group label {
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+@media (max-width: 768px) {
+  .filters {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .filters .filter-buttons {
+    margin-left: 0;
+    justify-content: flex-start;
+  }
+}
+
+.actionsWrapper {
+  display: flex;
+  gap: 8px;
+}
