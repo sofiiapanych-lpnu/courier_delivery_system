@@ -9,6 +9,7 @@ import Table from '../../components/Table';
 import Modal from '../../components/Modal';
 import CourierScheduleForm from '../../components/forms/CourierScheduleForm';
 import Pagination from '../../components/Pagination'
+import ActionButton from '../../components/ActionButton'
 import './filters.css';
 
 const CourierSchedulePage = () => {
@@ -131,7 +132,6 @@ const CourierSchedulePage = () => {
 
         const { data: createdSchedule } = await courierScheduleService.create(normalizedSchedule);
 
-        // setSchedules(prev => [...prev, newSchedule]);
         setRefreshKey(prev => prev + 1);
       } catch (e) {
         console.error(e);
@@ -158,10 +158,18 @@ const CourierSchedulePage = () => {
       header: 'Actions',
       accessor: 'actions',
       cell: ({ row }) => (
-        <>
-          <button onClick={() => handleEditSchedule(row.schedule_id)}>Edit</button>
-          <button onClick={() => handleDeleteSchedule(row.schedule_id)} style={{ marginLeft: '10px' }}>Delete</button>
-        </>
+        <div className="actionsWrapper">
+          <ActionButton
+            variant="edit"
+            onClick={() => handleEditSchedule(row.schedule_id)}>
+            Edit
+          </ActionButton>
+          <ActionButton
+            variant="delete"
+            onClick={() => handleDeleteSchedule(row.schedule_id)}>
+            Delete
+          </ActionButton>
+        </div>
       )
     }
   ];
