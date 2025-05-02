@@ -56,7 +56,9 @@ const LoginForm = ({ onSuccess }) => {
         Login
       </button>
 
-      <p className={styles.message}>{message}</p>
+      <p className={styles.message}>
+        {message && message}
+      </p>
     </form>
   );
 };

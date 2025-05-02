@@ -66,7 +66,12 @@ const RegisterForm = ({ onSuccess }) => {
 
       const decoded = jwtDecode(res.data.access_token);
       if (userContext && userContext.setUser) {
-        userContext.setUser({ userId: decoded.sub, email: decoded.email });
+        userContext.setUser({
+          userId: decoded.sub,
+          email: decoded.email,
+          role: decoded.role,
+          username: decoded.username,
+        });
       }
 
       setMessage('Registration successful!');
@@ -89,23 +94,6 @@ const RegisterForm = ({ onSuccess }) => {
       }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
-    }
-  };
-
-  const handleCheckboxChange = () => {
-    const newVal = !formData.vehicle.isCompanyOwner;
-    setFormData((prev) => ({
-      ...prev,
-      vehicle: {
-        ...prev.vehicle,
-        isCompanyOwner: newVal
-      }
-    }));
-    // Якщо вибрав компанійське авто — переключаємо на селект за замовчуванням
-    if (newVal) {
-      setVehicleSource('company');
-    } else {
-      setVehicleSource('own');
     }
   };
 
@@ -202,17 +190,6 @@ const RegisterForm = ({ onSuccess }) => {
 
         {formData.role === 'courier' && (
           <div className={styles.formSection}>
-            {/* <div className={styles.formGroup}>
-              <label className={styles.checkboxLabel}>
-                Company Owner
-                <input
-                  type="checkbox"
-                  checked={formData.vehicle.isCompanyOwner}
-                  onChange={handleCheckboxChange}
-                />
-              </label>
-            </div> */}
-
             <div className={styles.formGroup}>
               <label>Vehicle Source:</label>
               <select value={vehicleSource} onChange={(e) => setVehicleSource(e.target.value)}>
@@ -221,7 +198,6 @@ const RegisterForm = ({ onSuccess }) => {
               </select>
             </div>
 
-            {/* if select company vehicle */}
             {vehicleSource === 'company' && (
               <div className={styles.formGroup}>
                 <label>Select Company Vehicle:</label>
@@ -239,7 +215,6 @@ const RegisterForm = ({ onSuccess }) => {
               </div>
             )}
 
-            {/* if enter own vehicle */}
             {vehicleSource === 'own' && (
               <>
                 <div className={styles.formGroup}>
@@ -292,7 +267,9 @@ const RegisterForm = ({ onSuccess }) => {
         Register
       </button>
 
-      <p className={styles.message}>{message}</p>
+      <p className={styles.message}>
+        {message && message}
+      </p>
     </form>
 
   );

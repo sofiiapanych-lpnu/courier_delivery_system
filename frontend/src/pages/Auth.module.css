@@ -1,7 +1,16 @@
+/* body {
+  margin: 0;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+} */
+
 .container {
+  min-width: 400px;
   max-width: 500px;
-  margin: 60px auto;
-  padding: 30px;
+  margin: 30px auto;
+  padding: 20px 30px;
   background: #f4f4f9;
   border-radius: 16px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
@@ -9,21 +18,25 @@
 }
 
 .container h2 {
-  margin-bottom: 20px;
+  margin: 0;
   color: #333;
 }
 
 .switchButton {
-  margin-top: 20px;
-  padding: 10px 18px;
+  background: none;
   border: none;
-  background: #4caf50;
-  color: white;
-  border-radius: 8px;
+  color: #253040;
+  font-size: 16px;
   cursor: pointer;
-  transition: background 0.2s ease;
+  padding: 0;
+  text-decoration: underline;
+  transition: color 0.2s ease;
 }
 
-.switchButton:hover {
-  background: #43a047;
+.switchButton:hover,
+.switchButton:focus {
+  background: none;
+  outline: none;
+  box-shadow: none;
+  color: #1c2635;
 }

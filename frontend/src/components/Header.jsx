@@ -5,7 +5,6 @@ import "../styles/layout.css";
 const Header = () => {
   const { user, setUser } = useUser();
   const navigate = useNavigate();
-
   const handleLogout = () => {
     localStorage.removeItem("token");
     setUser(null);

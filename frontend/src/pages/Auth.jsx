@@ -5,11 +5,12 @@ import RegisterForm from '../components/auth/RegisterForm';
 import LoginForm from '../components/auth/LoginForm';
 
 const Auth = () => {
-  const [isRegister, setIsRegister] = useState(true);
+  const [isRegister, setIsRegister] = useState(false);
   const navigate = useNavigate();
 
   const handleSuccess = () => {
     navigate('/');
+    window.location.reload();
   };
 
   return (
@@ -26,8 +27,11 @@ const Auth = () => {
         className={styles.switchButton}
         onClick={() => setIsRegister(!isRegister)}
       >
-        Switch to {isRegister ? 'Login' : 'Register'}
+        {isRegister
+          ? "Already have an account? Log in"
+          : "Don't have an account? Create one"}
       </button>
+
     </div>
   );
 };
