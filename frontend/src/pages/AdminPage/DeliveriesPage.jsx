@@ -90,7 +90,6 @@ const DeliveriesPage = () => {
         }
 
         if (client && client.client_id) {
-          console.log('client', client)
           const normalizedClient = normalizeUserData(client.user);
           //await clientService.update(client.client_id, client);
           await userService.update(normalizedClient.userId, normalizedClient)
@@ -113,7 +112,6 @@ const DeliveriesPage = () => {
         };
 
         const normalizedDelivery = normalizeDeliveryData(deliveryPayload);
-        console.log(normalizedDelivery)
         const { data } = await deliveryService.update(delivery_id, normalizedDelivery);
 
         setDeliveries(prev => prev.map(d => d.delivery_id === delivery_id ? data : d));
@@ -141,7 +139,6 @@ const DeliveriesPage = () => {
       }
     }
   };
-  console.log('selectedDelivery', selectedDelivery)
 
   const formattedDeliveries = deliveries.map(formatDelivery);
 
@@ -206,7 +203,9 @@ const DeliveriesPage = () => {
               <option value="overnight">Overnight</option>
             </select>
           </div>
+        </div>
 
+        <div className='filter-section'>
           <div className="filter-group">
             <label>Payment Method</label>
             <select name="paymentMethod" onChange={handleFilterChange} value={formState.paymentMethod}>
@@ -216,9 +215,6 @@ const DeliveriesPage = () => {
               <option value="online">Online</option>
             </select>
           </div>
-        </div>
-
-        <div className="filter-section">
           <div className="filter-group">
             <label>Order Type</label>
             <input
@@ -228,7 +224,9 @@ const DeliveriesPage = () => {
               value={formState.orderTypeQuery}
             />
           </div>
+        </div>
 
+        <div className="filter-section">
           <div className="filter-group">
             <label>Warehouse Address</label>
             <input

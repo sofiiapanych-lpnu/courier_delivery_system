@@ -1,13 +1,15 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useUser } from "../context/UserContext";
 import "../styles/layout.css";
 
 const Header = () => {
   const { user, setUser } = useUser();
+  const navigate = useNavigate();
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     setUser(null);
+    navigate("/");
   };
 
   return (

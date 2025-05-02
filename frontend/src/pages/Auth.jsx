@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import styles from './Auth.module.css';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import RegisterForm from '../components/forms/RegisterForm';
-import LoginForm from '../components/forms/LoginForm';
+import RegisterForm from '../components/auth/RegisterForm';
+import LoginForm from '../components/auth/LoginForm';
 
 const Auth = () => {
   const [isRegister, setIsRegister] = useState(true);
@@ -12,15 +13,19 @@ const Auth = () => {
   };
 
   return (
-    <div>
+    <div className={styles.container}>
       <h2>{isRegister ? 'Register' : 'Login'}</h2>
 
-      {isRegister ?
+      {isRegister ? (
         <RegisterForm onSuccess={handleSuccess} />
-        : <LoginForm onSuccess={handleSuccess} />
-      }
+      ) : (
+        <LoginForm onSuccess={handleSuccess} />
+      )}
 
-      <button onClick={() => setIsRegister(!isRegister)}>
+      <button
+        className={styles.switchButton}
+        onClick={() => setIsRegister(!isRegister)}
+      >
         Switch to {isRegister ? 'Login' : 'Register'}
       </button>
     </div>

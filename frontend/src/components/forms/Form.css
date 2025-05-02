@@ -1,0 +1,176 @@
+form,
+.form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 20px;
+  margin: 0 auto;
+}
+
+h2 {
+  font-size: 24px;
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+h3 {
+  font-size: 20px;
+  margin-bottom: 8px;
+  margin-top: 0;
+}
+
+.section {
+  margin-bottom: 30px;
+  padding: 20px;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.input-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.row label,
+.input-field label {
+  font-weight: 500;
+  font-size: 14px;
+  color: #333;
+}
+
+.input-field input,
+.input-field select {
+  padding: 8px 12px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  transition: border 0.2s ease;
+}
+
+.input-field-number {
+  max-width: 130px;
+}
+
+.input-field input:focus,
+.input-field select:focus {
+  outline: none;
+  border-color: #4caf50;
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
+}
+
+.warehouse,
+.address,
+.order,
+.delivery,
+.client,
+.courier,
+.user-section,
+.address-section,
+.vehicle-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+
+.warehouse .input-field,
+.address .input-field,
+.order .input-field,
+.delivery .input-field,
+.client .input-field,
+.courier .input-field,
+.user-section .input-field,
+.address-section .input-field,
+.vehicle-section .input-field {
+  flex: 1 20px 250px;
+}
+
+button {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 6px;
+  background: #4caf50;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+button:hover {
+  background: #43a047;
+}
+
+input[type="datetime-local"] {
+  padding: 8px 12px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.input-field textarea {
+  padding: 8px 12px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  min-height: 80px;
+  resize: vertical;
+  transition: border 0.2s ease;
+}
+
+.input-field textarea:focus {
+  outline: none;
+  border-color: #4caf50;
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
+}
+
+
+.input-spacing {
+  width: 140px;
+}
+
+.input-spacing-large {
+  width: 340px;
+}
+
+.schedule {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.day-schedule {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.day-schedule h4 {
+  margin: 0;
+}
+
+@media (max-width: 600px) {
+
+  .warehouse .input-field,
+  .address .input-field,
+  .order .input-field,
+  .delivery .input-field,
+  .client .input-field,
+  .courier .input-field,
+  .user-section .input-field,
+  .address-section .input-field,
+  .vehicle-section .input-field {
+    flex: 1 1 100%;
+  }
+}

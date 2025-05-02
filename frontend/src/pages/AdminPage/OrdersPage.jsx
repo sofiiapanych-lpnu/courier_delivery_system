@@ -73,9 +73,7 @@ const OrdersPage = () => {
   const handleModalOK = async () => {
     if (modalMode === 'edit') {
       try {
-        console.log('selectedOrder', selectedOrder)
         const normalizedOrder = normalizeOrderData(selectedOrder);
-        console.log('normalizedOrder', normalizedOrder)
 
         const { data } = await orderService.update(selectedOrder.order_id, normalizedOrder);
 
@@ -129,8 +127,6 @@ const OrdersPage = () => {
     });
   };
 
-
-  console.log(orders)
   const formattedOrders = orders.map(formatOrder);
 
   const orderColumns = [

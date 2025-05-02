@@ -64,7 +64,7 @@ const UserProfilePage = () => {
         vehicle: normalizedVehicle
       })
         .then(response => {
-          console.log('Response from backend:', response.data);
+
           setUserInfo(prev => ({
             ...prev,
             Courier: {

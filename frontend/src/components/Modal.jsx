@@ -1,7 +1,8 @@
 import { createPortal } from 'react-dom'
 import { useRef, useEffect } from 'react'
+import './Modal.css';
 
-export default function Modal({ children, open, onClose, onOK, okText = "OK", closeText = "Close" }) {
+export default function Modal({ children, open, onClose, onOK, okText = "OK", closeText = "Close", noMaxWidth = false }) {
   const dialog = useRef()
 
   useEffect(() => {
@@ -30,15 +31,16 @@ export default function Modal({ children, open, onClose, onOK, okText = "OK", cl
   }, [onClose]);
 
   return createPortal( //dom
-    <dialog ref={dialog}>
+    <dialog ref={dialog} className={noMaxWidth ? 'dialog-no-max-width' : ''}>
       <div className="modal-content">
         {children}
-        <div className='buttons-modal'>
+        <div className="buttons-modal">
           <button onClick={onOK} variant="ok">{okText}</button>
           <button onClick={onClose} variant="close">{closeText}</button>
         </div>
       </div>
-    </dialog>,
+    </dialog>
+    ,
     document.getElementById('modal')
   )
 }

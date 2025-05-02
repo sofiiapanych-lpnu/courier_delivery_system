@@ -19,11 +19,11 @@ const WarehouseForm = ({ selectedWarehouse, setSelectedWarehouse }) => {
     setSelectedWarehouse(updatedWarehouse);
   };
 
-  const renderInput = (label, path, value) => (
-    <div className='input-field'>
+  const renderInput = (label, path, value, type = "text") => (
+    <div className={`input-field input-field-${type}`}>
       <label>{label}</label>
       <input
-        type="text"
+        type={type}
         value={value || ''}
         onChange={(e) => handleChange(path, e.target.value)}
       />
@@ -33,14 +33,20 @@ const WarehouseForm = ({ selectedWarehouse, setSelectedWarehouse }) => {
   return (
     <div>
       <h2>Edit Warehouse</h2>
-      <div className='warehouse'>
-        {renderInput("Name", "name", selectedWarehouse?.name)}
-        {renderInput("Contact Number", "contact_number", selectedWarehouse?.contact_number)}
-        {renderInput("Country", "address.country", selectedWarehouse?.address?.country)}
-        {renderInput("City", "address.city", selectedWarehouse?.address?.city)}
-        {renderInput("Street", "address.street_name", selectedWarehouse?.address?.street_name)}
-        {renderInput("Building Number", "address.building_number", selectedWarehouse?.address?.building_number)}
-        {renderInput("Apartment Number", "address.apartment_number", selectedWarehouse?.address?.apartment_number)}
+      <div className='section'>
+        <div className='row'>
+          {renderInput("Name", "name", selectedWarehouse?.name)}
+          {renderInput("Contact Number", "contact_number", selectedWarehouse?.contact_number)}
+        </div>
+        <div className='row'>
+          {renderInput("Country", "address.country", selectedWarehouse?.address?.country)}
+          {renderInput("City", "address.city", selectedWarehouse?.address?.city)}
+        </div>
+        <div className='row'>
+          {renderInput("Street", "address.street_name", selectedWarehouse?.address?.street_name)}
+          {renderInput("Building Number", "address.building_number", selectedWarehouse?.address?.building_number, "number")}
+          {renderInput("Apartment Number", "address.apartment_number", selectedWarehouse?.address?.apartment_number, "number")}
+        </div>
       </div>
     </div>
   );

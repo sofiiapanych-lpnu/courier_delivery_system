@@ -121,6 +121,18 @@ export class FeedbackService {
   async getFeedbackById(id: number): Promise<Feedback> {
     const feedback = await this.prisma.feedback.findUnique({
       where: { feedback_id: id },
+      include: {
+        client: {
+          include: {
+            user: true,
+          }
+        },
+        courier: {
+          include: {
+            user: true,
+          }
+        }
+      },
     });
     if (!feedback) {
       throw new NotFoundException(`Feedback with ID ${id} not found`);

@@ -17,15 +17,27 @@ export class CourierService {
     dto: CreateCourierDto,
     tx: Prisma.TransactionClient
   ): Promise<Courier> {
-    const createdVehicle = await this.vehicleService.createVehicle(dto.vehicle, tx);
+    const existingVehicle = await tx.vehicle.findUnique({
+      where: { license_plate: dto.vehicle.licensePlate },
+    });
+
+    let licensePlateToUse: string;
+
+    if (existingVehicle) {
+      licensePlateToUse = existingVehicle.license_plate;
+    } else {
+      const createdVehicle = await this.vehicleService.createVehicle(dto.vehicle, tx);
+      licensePlateToUse = createdVehicle.license_plate;
+    }
 
     return tx.courier.create({
       data: {
         user_id: dto.userId,
-        license_plate: createdVehicle.license_plate,
+        license_plate: licensePlateToUse,
       },
     });
   }
+
 
   async getAllCouriers(query: {
     firstName?: string;

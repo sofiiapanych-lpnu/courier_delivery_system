@@ -29,38 +29,51 @@ const WarehousesListPage = () => {
   const navigate = useNavigate();
 
   const handleSelectWarehouse = (warehouse) => {
-    console.log('navigate', warehouse)
     navigate(`/warehouses/${warehouse.warehouse_id}/create-order`);
   };
 
   const formattedWarehouses = warehouses.map(formatWarehouse);
-  console.log('warehouses', warehouses, formattedWarehouses)
-
 
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>Warehouses</h1>
       <div className={styles.filters}>
-        <input
-          name="name"
-          onChange={handleFilterChange}
-          placeholder="Warehouse Name"
-          value={formState.name}
-        />
-        <input
-          name="address"
-          onChange={handleFilterChange}
-          placeholder="Address"
-          value={formState.address}
-        />
-        <input
-          name="contactNumber"
-          onChange={handleFilterChange}
-          placeholder="Contact number"
-          value={formState.contactNumber}
-        />
+        <div className={styles.inputField}>
+          <label htmlFor="name">Warehouse Name</label>
+          <input
+            id="name"
+            name="name"
+            onChange={handleFilterChange}
+            placeholder="e.g. Central Storage"
+            value={formState.name}
+          />
+        </div>
+
+        <div className={styles.inputField}>
+          <label htmlFor="address">Address</label>
+          <input
+            id="address"
+            name="address"
+            onChange={handleFilterChange}
+            placeholder="e.g. 123 Main St, Springfield"
+            value={formState.address}
+          />
+        </div>
+
+        <div className={styles.inputField}>
+          <label htmlFor="contactNumber">Contact Number</label>
+          <input
+            id="contactNumber"
+            name="contactNumber"
+            onChange={handleFilterChange}
+            placeholder="e.g. +380971234567"
+            value={formState.contactNumber}
+          />
+        </div>
+
         <button onClick={handleClearFilters}>Clear Filters</button>
       </div>
+
       <div>
         {formattedWarehouses.map((warehouse) => (
           <Card

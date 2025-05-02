@@ -1,0 +1,105 @@
+.formWrapper {
+  display: flex;
+  gap: 30px;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  width: 600px;
+  max-width: 100%;
+  transition: width 0.3s ease;
+}
+
+.courierActive {
+  width: 900px;
+}
+
+.formSection {
+  flex: 1 1 50%;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+}
+
+.formGroup label {
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: #333;
+}
+
+.formGroup input,
+.formGroup select {
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s, width 0.3s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.formGroup input:focus,
+.formGroup select:focus {
+  border-color: #3b82f6;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+.submitButton {
+  background-color: #3b82f6;
+  color: #fff;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.2s;
+}
+
+.submitButton:hover {
+  background-color: #2563eb;
+}
+
+.message {
+  margin-top: 16px;
+  color: #e11d48;
+  font-weight: 500;
+}
+
+/* Початково друга секція схована */
+.formWrapper .formSection:nth-child(2) {
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
+  max-height: 0;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+/* При виборі кур’єра друга секція з’являється */
+.formWrapper.courierActive .formSection:nth-child(2) {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+  max-height: 1000px;
+}
+
+/* Адаптив для мобільних */
+@media (max-width: 768px) {
+  .formWrapper {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .formSection {
+    flex: 1 1 100%;
+  }
+}

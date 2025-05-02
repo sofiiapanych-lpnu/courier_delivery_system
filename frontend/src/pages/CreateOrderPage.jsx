@@ -56,8 +56,6 @@ const CreateOrderPage = () => {
         clientId: Number(clientId),
       });
 
-      console.log('delivery', delivery);
-
       alert("Order and delivery successfully created!");
     } catch (err) {
       console.error("Error during creation:", err);

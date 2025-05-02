@@ -18,11 +18,11 @@ const UserForm = ({ selectedUser, setSelectedUser }) => {
     setSelectedUser(updatedUser);
   };
 
-  const renderInput = (label, path, value) => (
-    <div className='input-field'>
+  const renderInput = (label, path, value, type = "text") => (
+    <div className={`input-field input-field-${type}`}>
       <label>{label}</label>
       <input
-        type="text"
+        type={type}
         value={value || ''}
         onChange={(e) => handleChange(path, e.target.value)}
       />
@@ -44,21 +44,29 @@ const UserForm = ({ selectedUser, setSelectedUser }) => {
   return (
     <div>
       <h2>Edit User</h2>
-      <div className="user-section">
-        {renderInput("First Name", "first_name", selectedUser?.first_name)}
-        {renderInput("Last Name", "last_name", selectedUser?.last_name)}
-        {renderInput("Email", "email", selectedUser?.email)}
-        {renderInput("Phone Number", "phone_number", selectedUser?.phone_number)}
+      <div className="section">
+        <div className='row'>
+          {renderInput("First Name", "first_name", selectedUser?.first_name)}
+          {renderInput("Last Name", "last_name", selectedUser?.last_name)}
+        </div>
+        <div className='row'>
+          {renderInput("Email", "email", selectedUser?.email)}
+          {renderInput("Phone Number", "phone_number", selectedUser?.phone_number)}
+        </div>
       </div>
 
       {selectedUser?.role === 'client' ? (
-        <div className="address-section">
+        <div className="section">
           <h3>Address</h3>
-          {renderInput("Country", "Client.address.country", selectedUser?.Client?.address?.country)}
-          {renderInput("City", "Client.address.city", selectedUser?.Client?.address?.city)}
-          {renderInput("Street", "Client.address.street_name", selectedUser?.Client?.address?.street_name)}
-          {renderInput("Building", "Client.address.building_number", selectedUser?.Client?.address?.building_number)}
-          {renderInput("Apartment", "Client.address.apartment_number", selectedUser?.Client?.address?.apartment_number)}
+          <div className='row'>
+            {renderInput("Country", "Client.address.country", selectedUser?.Client?.address?.country)}
+            {renderInput("City", "Client.address.city", selectedUser?.Client?.address?.city)}
+          </div>
+          <div className='row'>
+            {renderInput("Street", "Client.address.street_name", selectedUser?.Client?.address?.street_name)}
+            {renderInput("Building", "Client.address.building_number", selectedUser?.Client?.address?.building_number, "number")}
+            {renderInput("Apartment", "Client.address.apartment_number", selectedUser?.Client?.address?.apartment_number, "number")}
+          </div>
         </div>
       ) : selectedUser?.role === 'courier' ? (
         <div className="vehicle-section">

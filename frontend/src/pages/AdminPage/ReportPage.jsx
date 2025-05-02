@@ -6,6 +6,7 @@ import Modal from '../../components/Modal'
 import { formatDelivery } from '../../utils/formatters'
 import Pagination from '../../components/Pagination'
 import ActionButton from '../../components/ActionButton'
+import Select from "react-select";
 import './filters.css';
 
 const ReportPage = () => {
@@ -50,7 +51,6 @@ const ReportPage = () => {
       limit,
     })
       .then((res) => {
-        console.log(res)
         setReportData(res.data.items);
         setTotalPages(res.data.meta.totalPages);
         setLoading(false);
@@ -82,7 +82,6 @@ const ReportPage = () => {
       groupBy: 'all',
     });
   };
-  console.log(reportData)
   const handleOpenModal = (deliveries) => {
     setSelectedCourierDeliveries(deliveries);
     setIsModalOpen(true);
@@ -109,7 +108,7 @@ const ReportPage = () => {
       accessor: 'courierId',
       cell: ({ row }) => (
         <ActionButton
-          onClick={() => { console.log(row); handleOpenModal(row.deliveries) }}
+          onClick={() => { handleOpenModal(row.deliveries) }}
         >
           Deliveries
         </ActionButton>
@@ -154,14 +153,25 @@ const ReportPage = () => {
           onChange={handleFilterChange}
         />
         <label>Courier</label>
-        <select name="courierId" value={filters.courierId} onChange={handleFilterChange}>
-          <option value="">All</option>
-          {couriers.map(courier => (
-            <option key={courier.courier_id} value={courier.courier_id}>
-              ID: {courier.courier_id} | {courier.user.first_name} {courier.user.last_name}
-            </option>
-          ))}
-        </select>
+        <Select
+          name="courierId"
+          value={couriers.find(c => c.courier_id === Number(filters.courierId)) || null}
+          onChange={selectedOption => {
+            setFilters(prev => ({
+              ...prev,
+              courierId: selectedOption ? selectedOption.courier_id : ""
+            }));
+          }}
+          options={couriers}
+          getOptionLabel={courier =>
+            `ID: ${courier.courier_id} | ${courier.user.first_name} ${courier.user.last_name}`
+          }
+          getOptionValue={courier => courier.courier_id}
+          isClearable
+          placeholder="Select Courier..."
+          styles={customSelectStyles}
+        />
+
         <label>Group By</label>
         <select name="groupBy" value={filters.groupBy} onChange={handleFilterChange}>
           <option value="all">All</option>
@@ -227,6 +237,7 @@ const ReportPage = () => {
         onOK={() => setIsModalOpen(false)}
         okText="OK"
         closeText="Close"
+        noMaxWidth={true}
       >
         <h2>Courier Deliveries</h2>
         <Table data={formattedDeliveries} columns={deliveryColumns} />
@@ -237,3 +248,27 @@ const ReportPage = () => {
 };
 
 export default ReportPage;
+
+const customSelectStyles = {
+  container: (provided) => ({
+    ...provided,
+    width: '230px',
+  }),
+  control: (provided) => ({
+    ...provided,
+    minHeight: '30px',
+    height: '34px',
+  }),
+  menu: (provided) => ({
+    ...provided,
+    maxHeight: '150px',
+    overflowY: 'auto',
+    zIndex: 9999,
+  }),
+  menuList: (provided) => ({
+    ...provided,
+    maxHeight: '150px',
+    overflowY: 'auto',
+  }),
+};
+

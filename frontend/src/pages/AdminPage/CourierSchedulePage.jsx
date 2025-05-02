@@ -125,8 +125,6 @@ const CourierSchedulePage = () => {
     }
 
     if (modalMode === 'create') {
-      console.log('selectedSchedule', selectedSchedule)
-
       try {
         const normalizedSchedule = normalizeCourierScheduleData(selectedSchedule);
 
