@@ -13,8 +13,8 @@ const ReportPage = () => {
   const [page, setPage] = useState(1);
   const limit = 5;
   const [totalPages, setTotalPages] = useState(0);
-
   const [reportData, setReportData] = useState([]);
+  const [fullReportData, setFullReportData] = useState([]);
   const [filters, setFilters] = useState({
     startDate: '',
     endDate: '',
@@ -28,7 +28,13 @@ const ReportPage = () => {
 
   useEffect(() => {
     fetchReportData();
-  }, [filters, page]);
+    fetchFullReportData();
+  }, [filters]);
+
+  useEffect(() => {
+    fetchReportData();
+  }, [page]);
+
 
   const fetchCouriers = async () => {
     try {
@@ -61,9 +67,20 @@ const ReportPage = () => {
       });
   };
 
-  useEffect(() => {
-    fetchReportData();
-  }, [filters]);
+  const fetchFullReportData = () => {
+    courierService.getStatistics({
+      startDate: filters.startDate ? new Date(filters.startDate) : undefined,
+      endDate: filters.endDate ? new Date(filters.endDate) : undefined,
+      courierId: filters.courierId ? Number(filters.courierId) : undefined,
+      groupBy: filters.groupBy,
+    })
+      .then((res) => {
+        setFullReportData(res.data.items);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch full report", err);
+      });
+  };
 
   useEffect(() => {
     fetchCouriers();
@@ -87,13 +104,6 @@ const ReportPage = () => {
     setIsModalOpen(true);
   };
 
-  const flattenedReportData = reportData.flatMap(groupItem =>
-    groupItem.couriers.map(courier => ({
-      ...courier,
-      group: groupItem.group
-    }))
-  );
-
   const columns = [
     { header: 'Group', accessor: 'group' },
     { header: 'Courier', accessor: 'courierName' },
@@ -115,7 +125,6 @@ const ReportPage = () => {
       )
     }
   ];
-
   const formattedDeliveries = selectedCourierDeliveries.map(formatDelivery);
 
   const deliveryColumns = [
@@ -186,31 +195,22 @@ const ReportPage = () => {
         <div>Loading...</div>
       ) : (
         <>
-          <Table data={flattenedReportData} columns={columns} />
+          <Table data={reportData} columns={columns} />
           <Pagination page={page} totalPages={totalPages} setPage={setPage} />
+        </>
+      )}
 
-          <ResponsiveContainer width="100%" height={500}>
+      <div style={{ overflowX: 'auto', width: '100%' }}>
+        <div style={{ width: `${fullReportData.length * 120}px`, minWidth: '800px', height: '500px' }}>
+          <ResponsiveContainer width="100%" height="100%">
             <ComposedChart
-              data={reportData.map(groupItem => {
-                const couriers = groupItem.couriers || [];
-
-                const totalDeliveries = couriers.reduce((sum, courier) => sum + (courier.totalDeliveries || 0), 0);
-                const totalCost = couriers.reduce((sum, courier) => sum + (courier.totalCost || 0), 0);
-                const avgDeliveryCost = couriers.length
-                  ? couriers.reduce((sum, courier) => sum + (courier.avgDeliveryCost || 0), 0) / couriers.length
-                  : 0;
-                const averageDeliveryTimeMinutes = couriers.length
-                  ? couriers.reduce((sum, courier) => sum + (courier.averageDeliveryTimeMinutes || 0), 0) / couriers.length
-                  : 0;
-
-                return {
-                  group: groupItem.group,
-                  totalDeliveries,
-                  totalCost,
-                  avgDeliveryCost,
-                  averageDeliveryTimeMinutes,
-                };
-              })}
+              data={fullReportData.map((courierItem) => ({
+                group: courierItem.courierName,  // Групуємо за кур'єром
+                totalDeliveries: courierItem.totalDeliveries,
+                totalCost: courierItem.totalCost,
+                avgDeliveryCost: courierItem.avgDeliveryCost,
+                averageDeliveryTimeMinutes: courierItem.averageDeliveryTimeMinutes,
+              }))}
               margin={{ top: 20, right: 50, left: 20, bottom: 5 }}
             >
               <CartesianGrid stroke="#f5f5f5" />
@@ -228,8 +228,8 @@ const ReportPage = () => {
             </ComposedChart>
           </ResponsiveContainer>
 
-        </>
-      )}
+        </div>
+      </div>
 
       <Modal
         open={isModalOpen}

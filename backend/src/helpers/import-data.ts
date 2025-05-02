@@ -228,8 +228,15 @@ async function addDeliveries() {
     const deliveryType = faker.helpers.arrayElement(["standard", "express", "overnight"]);
     const paymentMethod = faker.helpers.arrayElement(["cash", "credit_card", "online"]);
 
-    const startTime = new Date();
-    startTime.setHours(faker.number.int({ min: 0, max: 23 }), faker.number.int({ min: 0, max: 59 }), 0, 0);
+    const startTime = faker.date.between({
+      from: '2023-01-01',
+      to: '2025-12-31'
+    });
+
+    startTime.setHours(faker.number.int({ min: 0, max: 23 }));
+    startTime.setMinutes(faker.number.int({ min: 0, max: 59 }));
+    startTime.setSeconds(0);
+    startTime.setMilliseconds(0);
 
     const endTime = new Date(startTime);
     const deliveryDuration = faker.number.int({ min: 1, max: 5 });
@@ -255,6 +262,7 @@ async function addDeliveries() {
     });
   }
 }
+
 
 async function main() {
   try {

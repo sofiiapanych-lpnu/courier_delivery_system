@@ -208,7 +208,7 @@ export class CourierService {
     page?: number;
     limit?: number;
   }) {
-    const { startDate, endDate, courierId, groupBy, page = 1, limit = 10 } = query;
+    const { startDate, endDate, courierId, groupBy, page = 1, limit = 10000 } = query;
     const skip = (page - 1) * limit;
 
     const whereClause: Prisma.DeliveryWhereInput = {
@@ -299,20 +299,21 @@ export class CourierService {
       }))
     }));
 
-    const totalItems = resultArray.length;
+
+    const allCouriers = resultArray.flatMap(group => group.couriers);
+    const paginatedCouriers = allCouriers.slice(skip, skip + limit);
+    const totalItems = allCouriers.length;
     const totalPages = Math.ceil(totalItems / limit);
-    const paginatedItems = resultArray.slice(skip, skip + limit);
 
     return {
-      items: paginatedItems,
+      items: paginatedCouriers,
       meta: {
         totalItems,
         totalPages,
         currentPage: page,
       },
     };
+
   }
-
-
 }
 
