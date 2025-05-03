@@ -167,7 +167,7 @@ export class DeliveryService {
         skip,
         take: limit,
         orderBy: {
-          start_time: 'desc',
+          updated_at: 'desc',
         },
         include: {
           warehouse: {

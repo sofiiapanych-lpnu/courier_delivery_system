@@ -228,19 +228,45 @@ async function addDeliveries() {
     const deliveryType = faker.helpers.arrayElement(["standard", "express", "overnight"]);
     const paymentMethod = faker.helpers.arrayElement(["cash", "credit_card", "online"]);
 
-    const startTime = faker.date.between({
+    const startDate = faker.date.between({
       from: '2023-01-01',
       to: '2025-12-31'
     });
 
-    startTime.setHours(faker.number.int({ min: 0, max: 23 }));
-    startTime.setMinutes(faker.number.int({ min: 0, max: 59 }));
-    startTime.setSeconds(0);
-    startTime.setMilliseconds(0);
+    const today = new Date();
+    const daysDiff = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
 
-    const endTime = new Date(startTime);
-    const deliveryDuration = faker.number.int({ min: 1, max: 5 });
-    endTime.setHours(startTime.getHours() + deliveryDuration);
+    let deliveryStatus: "pending" | "in_progress" | "delivered";
+    if (daysDiff < 1) {
+      deliveryStatus = faker.helpers.arrayElement(["pending", "in_progress"]);
+    } else if (daysDiff < 7) {
+      deliveryStatus = faker.helpers.arrayElement(["pending", "in_progress", "delivered"]);
+    } else {
+      deliveryStatus = "delivered";
+    }
+
+    let startTime: Date | null = null;
+    let endTime: Date | null = null;
+
+    if (deliveryStatus === "in_progress") {
+      startTime = new Date(startDate);
+      startTime.setHours(faker.number.int({ min: 0, max: 23 }));
+      startTime.setMinutes(faker.number.int({ min: 0, max: 59 }));
+      startTime.setSeconds(0);
+      startTime.setMilliseconds(0);
+    }
+
+    if (deliveryStatus === "delivered") {
+      startTime = new Date(startDate);
+      startTime.setHours(faker.number.int({ min: 0, max: 23 }));
+      startTime.setMinutes(faker.number.int({ min: 0, max: 59 }));
+      startTime.setSeconds(0);
+      startTime.setMilliseconds(0);
+
+      endTime = new Date(startTime);
+      const deliveryDuration = faker.number.int({ min: 1, max: 5 });
+      endTime.setHours(startTime.getHours() + deliveryDuration);
+    }
 
     const deliveryCost = faker.number.float({ min: 5, max: 50, fractionDigits: 2 });
 
@@ -253,16 +279,18 @@ async function addDeliveries() {
         delivery_type: deliveryType,
         delivery_cost: deliveryCost,
         payment_method: paymentMethod,
-        delivery_status: "pending",
+        delivery_status: deliveryStatus,
         start_time: startTime,
         end_time: endTime,
-        desired_duration: deliveryDuration,
+        desired_duration:
+          deliveryStatus === "delivered" && startTime && endTime
+            ? Math.floor((endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60))
+            : null,
         warehouse_id: randomWarehouse.warehouse_id,
       },
     });
   }
 }
-
 
 async function main() {
   try {

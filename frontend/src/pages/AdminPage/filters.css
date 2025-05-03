@@ -135,3 +135,11 @@
   display: flex;
   gap: 8px;
 }
+
+.export-section button {
+  background-color: #28a745;
+}
+
+.export-section button:hover {
+  background-color: #218838;
+}

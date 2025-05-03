@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { saveAs } from 'file-saver';
 import { useData } from '../../hooks/useData';
 import { useFilters } from '../../hooks/useFilters'
 import { deliveryService } from '../../api/deliveryService';
@@ -142,6 +143,13 @@ const DeliveriesPage = () => {
 
   const formattedDeliveries = deliveries.map(formatDelivery);
 
+  const handleExportJSON = () => {
+    const json = JSON.stringify(deliveries, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    saveAs(blob, 'deliveries_export.json');
+  };
+
+
   const deliveryColumns = [
     { header: 'Warehouse', accessor: 'warehouse' },
     { header: 'Address', accessor: 'address' },
@@ -181,6 +189,7 @@ const DeliveriesPage = () => {
   return (
     <div>
       <h1>Deliveries</h1>
+
       <div className="filters">
 
         <div className="filter-section">
@@ -262,6 +271,10 @@ const DeliveriesPage = () => {
 
         <div className="filter-section">
           <button onClick={handleClearFilters}>Clear Filters</button>
+        </div>
+
+        <div className="export-section">
+          <button onClick={handleExportJSON}>Export JSON</button>
         </div>
       </div>
 
