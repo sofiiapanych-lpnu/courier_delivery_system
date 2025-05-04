@@ -11,6 +11,7 @@ import { normalizeAddressData, normalizeUserData, normalizeVehicleData } from ".
 import UserDeliveriesSection from "../components/UserDeliveriesSection";
 import UserFeedbacksSection from "../components/UserFeedbacksSection"
 import UserScheduleSection from "../components/UserScheduldeSection";
+import styles from "./UserProfilePage.module.css";
 
 const UserProfilePage = () => {
   const [page, setPage] = useState(1);
@@ -112,39 +113,76 @@ const UserProfilePage = () => {
 
   return (
     <div>
-      <h1>User Profile</h1>
-      <div>
+      <h1 className={styles.heading}>User Profile</h1>
+      <div className={styles.section}>
         <h2>Basic Info</h2>
-        <div>Email: {userInfo.email}</div>
-        <div>First Name: {userInfo.first_name}</div>
-        <div>Last Name: {userInfo.last_name}</div>
-        <div>Phone Number: {userInfo.phone_number}</div>
+        <div className={styles.infoRow}>
+          <span className={styles.infoLabel}>User Name:</span>
+          <span className={styles.infoValue}>{userInfo.first_name} {userInfo.last_name}</span>
+        </div>
+        <div className={styles.infoRow}>
+          <span className={styles.infoLabel}>Email:</span>
+          <span className={styles.infoValue}>{userInfo.email}</span>
+        </div>
+        <div className={styles.infoRow}>
+          <span className={styles.infoLabel}>Phone Number:</span>
+          <span className={styles.infoValue}>{userInfo.phone_number}</span>
+        </div>
       </div>
-      <button onClick={handleEditClick}>Edit</button>
+      <button onClick={handleEditClick} className={styles.button}>Edit</button>
 
       {!isAdmin && (
         <div>
-          <h2>{isCourier ? "Vehicle Info" : "Address Info"}</h2>
           {isCourier ? (
-            <>
-              <div>License Plate: {userInfo.Courier?.vehicle.license_plate}</div>
-              <div>Model: {userInfo.Courier?.vehicle.model}</div>
-              <div>Transport Type: {userInfo.Courier?.vehicle.transport_type}</div>
-              <div>Company Owned: {userInfo.Courier?.vehicle.is_company_owner ? "Yes" : "No"}</div>
-            </>
+            <div className={styles.section}>
+              <h2>{isCourier && "Vehicle Info"}</h2>
+              <div className={styles.infoRow}>
+                <span className={styles.infoLabel}>License Plate:</span>
+                <span className={styles.infoValue}>{userInfo.Courier?.vehicle.license_plate}</span>
+              </div>
+              <div className={styles.infoRow}>
+                <span className={styles.infoLabel}>Model:</span>
+                <span className={styles.infoValue}>{userInfo.Courier?.vehicle.model}</span>
+              </div>
+              <div className={styles.infoRow}>
+                <span className={styles.infoLabel}>Transport Type:</span>
+                <span className={styles.infoValue}>{userInfo.Courier?.vehicle.transport_type}</span>
+              </div>
+              <div className={styles.infoRow}>
+                <span className={styles.infoLabel}>Company Owned:</span>
+                <span className={styles.infoValue}>{userInfo.Courier?.vehicle.is_company_owner ? "Yes" : "No"}</span>
+              </div>
+            </div>
           ) : (
-            <>
-              <div>Country: {displayValue(userInfo.Client?.address?.country)}</div>
-              <div>City: {displayValue(userInfo.Client?.address?.city)}</div>
-              <div>Street: {displayValue(userInfo.Client?.address?.street_name)}</div>
-              <div>Building: {displayValue(userInfo.Client?.address?.building_number)}</div>
-              <div>Apartment: {displayValue(userInfo.Client?.address?.apartment_number)}</div>
-            </>
+            <div className={styles.section}>
+              <h2>{!isCourier && "Address Info"}</h2>
+              <div className={styles.infoRow}>
+                <span className={styles.infoLabel}>Country:</span>
+                <span className={styles.infoValue}>{displayValue(userInfo.Client?.address?.country)}</span>
+              </div>
+              <div className={styles.infoRow}>
+                <span className={styles.infoLabel}>City:</span>
+                <span className={styles.infoValue}>{displayValue(userInfo.Client?.address?.city)}</span>
+              </div>
+              <div className={styles.infoRow}>
+                <span className={styles.infoLabel}>Street:</span>
+                <span className={styles.infoValue}>{displayValue(userInfo.Client?.address?.street_name)}</span>
+              </div>
+              <div className={styles.infoRow}>
+                <span className={styles.infoLabel}>Building:</span>
+                <span className={styles.infoValue}>{displayValue(userInfo.Client?.address?.building_number)}</span>
+              </div>
+              <div className={styles.infoRow}>
+                <span className={styles.infoLabel}>Apartment:</span>
+                <span className={styles.infoValue}>{displayValue(userInfo.Client?.address?.apartment_number)}</span>
+              </div>
+            </div>
           )}
 
           <UserDeliveriesSection userInfo={userInfo} isCourier={isCourier} />
           <UserFeedbacksSection userInfo={userInfo} isCourier={isCourier} />
-          <UserScheduleSection userInfo={userInfo} isCourier={isCourier} />
+          {isCourier && <UserScheduleSection userInfo={userInfo} isCourier={isCourier} />}
+
         </div>
       )}
 

@@ -4,7 +4,7 @@ import { useFilters } from '../hooks/useFilters';
 import { courierService } from '../api/courierService';
 import { formatSchedule } from '../utils/formatters';
 
-const UserScheduleSection = ({ userInfo, isCourier }) => {
+const UserScheduleSection = ({ userInfo }) => {
   const [page, setPage] = useState(1);
   const limit = 5;
   const [totalPages, setTotalPages] = useState(0);
