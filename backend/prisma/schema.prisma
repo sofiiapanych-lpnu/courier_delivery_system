@@ -52,7 +52,6 @@ model Courier {
   courier_id    Int      @id @default(autoincrement())
   user_id       Int      @unique
   license_plate String   @unique @db.VarChar(20)
-  //rating        Int //лишити для оптимізації чи забрати?
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
 

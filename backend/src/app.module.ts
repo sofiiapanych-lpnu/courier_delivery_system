@@ -15,6 +15,15 @@ import { CourierScheduleModule } from './modules/courier-schedule/courier-schedu
 import { CourierWeeklyScheduleModule } from './modules/courier-weekly-schedule/courier-weekly-schedule.module';
 import { CourierModule } from './modules/user/courier/courier.module';
 import { ClientModule } from './modules/user/client/client.module';
+import { GraphQLModule } from '@nestjs/graphql';
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
+import { join } from 'path';
+import { DeliveryModule_ } from './graphql/delivery/delivery.module';
+import { WarehouseModule_ } from './graphql/warehouse/warehouse.module'
+import { AddressModule_ } from './graphql/address/address.module';
+import { OrderModule_ } from './graphql/order/order.module';
+import { ClientModule_ } from './graphql/client/client.module';
+import { CourierModule_ } from './graphql/courier/courier.module';
 
 @Module({
   imports: [
@@ -33,7 +42,19 @@ import { ClientModule } from './modules/user/client/client.module';
     DeliveryModule,
     FeedbackModule,
     CourierScheduleModule,
-    CourierWeeklyScheduleModule],
+    CourierWeeklyScheduleModule,
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
+      autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+      playground: true,
+    }),
+    DeliveryModule_,
+    WarehouseModule_,
+    AddressModule_,
+    OrderModule_,
+    ClientModule_,
+    CourierModule_,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

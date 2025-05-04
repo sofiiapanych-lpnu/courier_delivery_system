@@ -1,0 +1,149 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Address_ {
+  address_id: Int!
+  street_name: String!
+  building_number: Int!
+  apartment_number: Int
+  city: String!
+  country: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type Warehouse_ {
+  warehouse_id: Int!
+  address_id: Int!
+  name: String!
+  contact_number: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  address: Address_!
+}
+
+type Order_ {
+  order_id: ID!
+  order_type: String!
+  description: String!
+  cost: Float!
+  payment_method: String!
+  weight: Float!
+  length: Float!
+  width: Float!
+  height: Float!
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+
+type User_ {
+  user_id: ID!
+  email: String!
+  phone_number: String!
+  first_name: String!
+  last_name: String!
+  role: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+}
+
+type Client_ {
+  client_id: ID!
+  user_id: Float!
+  address_id: Float
+  created_at: DateTime!
+  updated_at: DateTime!
+  user: User_!
+  address: Address_
+}
+
+type Vehicle_ {
+  license_plate: String!
+  model: String!
+  transport_type: String!
+  is_company_owner: Boolean!
+}
+
+type Courier_ {
+  courier_id: ID!
+  user_id: Float!
+  license_plate: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  user: User_!
+  vehicle: Vehicle_!
+}
+
+type Delivery {
+  delivery_id: ID!
+  order_id: Float!
+  courier_id: Float
+  client_id: Float
+  address_id: Float!
+  delivery_type: String!
+  delivery_cost: Float!
+  payment_method: String!
+  delivery_status: String!
+  start_time: DateTime
+  end_time: DateTime
+  desired_duration: Float
+  warehouse_id: Float!
+  created_at: DateTime!
+  updated_at: DateTime!
+  warehouse: Warehouse_!
+  address: Warehouse_!
+  Address: Address_!
+  order: Order_!
+  Client: Client_!
+  courier: Courier_!
+  vehicle: Vehicle_!
+}
+
+type Query {
+  deliveries: [Delivery!]!
+  delivery(delivery_id: Int!): Delivery!
+  warehouses: [Warehouse_!]!
+  warehouse(id: Int!): Warehouse_!
+  addresses: [Address_!]!
+  address(address_id: Int!): Address_!
+  orders: [Order_!]!
+  order(order_id: Int!): Order_!
+  clients: [Client_!]!
+  client(client_id: Int!): Client_!
+  couriers: [Courier_!]!
+  courier(courier_id: Int!): Courier_!
+}
+
+type Mutation {
+  createDelivery(data: CreateDeliveryInput!): Delivery!
+  createWarehouse(name: String!, contact_number: String!, address_id: Int!): Warehouse_!
+  createAddress(data: CreateAddressInput!): Address_!
+}
+
+input CreateDeliveryInput {
+  order_id: Float!
+  address_id: Float!
+  delivery_type: String!
+  delivery_cost: Float!
+  payment_method: String!
+  warehouse_id: Float!
+  courier_id: Float
+  client_id: Float
+  start_time: DateTime
+  end_time: DateTime
+  desired_duration: Float
+}
+
+input CreateAddressInput {
+  street_name: String!
+  building_number: Int!
+  apartment_number: Int
+  city: String!
+  country: String!
+}

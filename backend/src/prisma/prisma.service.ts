@@ -10,7 +10,7 @@ export class PrismaService extends PrismaClient {
     super({ //викликає конструктор батьківського класу
       datasources: {
         db: {
-          url: config.get(`DATABASE_URL_${role.toUpperCase()}`),
+          url: config.get(`DATABASE_URL`),
         },
       },
     });
