@@ -29,7 +29,7 @@ const WarehousesListPage = () => {
   const navigate = useNavigate();
 
   const handleSelectWarehouse = (warehouse) => {
-    navigate(`/warehouses/${warehouse.warehouse_id}/create-order`);
+    navigate(`/warehouses/${warehouse.warehouse_id}/${warehouse.name}/create-order`);
   };
 
   const formattedWarehouses = warehouses.map(formatWarehouse);

@@ -1,0 +1,95 @@
+.container {
+  max-width: 1200px;
+  margin: 40px auto;
+  padding: 24px;
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 24px;
+  text-align: center;
+  grid-column: span 3;
+}
+
+.form {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 30px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+}
+
+.label {
+  margin-bottom: 6px;
+  font-size: 16px;
+  font-weight: 500;
+  color: #333;
+}
+
+.input,
+.textarea {
+  padding: 10px 14px;
+  font-size: 15px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  transition: border 0.2s ease;
+}
+
+.input:focus,
+.textarea:focus {
+  border-color: #4f46e5;
+  outline: none;
+}
+
+.textarea {
+  min-height: 150px;
+  resize: vertical;
+}
+
+.dimensions {
+  display: flex;
+  gap: 10px;
+}
+
+.inputNumber {
+  flex: 1;
+  max-width: 100px;
+}
+
+.sectionTitle {
+  margin-top: 12px;
+  font-size: 20px;
+  font-weight: 600;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 6px;
+}
+
+.button {
+  padding: 14px;
+  background-color: #4f46e5;
+  color: #fff;
+  font-size: 16px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  grid-column: span 3;
+}
+
+.button:hover {
+  background-color: #4338ca;
+}
+
+.row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}

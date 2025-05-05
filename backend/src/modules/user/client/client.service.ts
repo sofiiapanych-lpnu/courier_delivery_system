@@ -50,6 +50,9 @@ export class ClientService {
   async getClientById(id: number): Promise<Client> {
     const client = await this.prisma.client.findUnique({
       where: { client_id: id },
+      include: {
+        address: true,
+      }
     });
 
     if (!client) {
@@ -115,8 +118,28 @@ export class ClientService {
     }
 
     if (!client.address_id) {
-      throw new Error(`Client does not have an address to update`);
+      if (!dto.country || !dto.city || !dto.streetName || !dto.buildingNumber) {
+        throw new Error('Missing required address fields for creation');
+      }
+
+      const newAddress = await this.prisma.address.create({
+        data: {
+          country: dto.country,
+          city: dto.city,
+          street_name: dto.streetName,
+          building_number: dto.buildingNumber,
+          apartment_number: dto.apartmentNumber || null,
+        },
+      });
+
+      await this.prisma.client.update({
+        where: { client_id: clientId },
+        data: { address_id: newAddress.address_id },
+      });
+
+      return newAddress;
     }
+
 
     const updatedAddress = await this.prisma.address.update({
       where: { address_id: client.address_id },

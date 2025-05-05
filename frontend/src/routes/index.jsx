@@ -35,7 +35,7 @@ const AppRoutes = () => {
           <Route path="reports" element={<ReportPage />} />
         </Route>
         <Route path="/warehouses" element={<Layout><WarehousesListPage /></Layout>}></Route>
-        <Route path="/warehouses/:warehouseId/create-order" element={<Layout><CreateOrderPage /></Layout>} />
+        <Route path="/warehouses/:warehouseId/:warehouseName/create-order" element={<Layout><CreateOrderPage /></Layout>} />
 
         {/* Захищений маршрут, доступний тільки для авторизованих користувачів */}
         {/* <Route
