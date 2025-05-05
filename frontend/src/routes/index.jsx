@@ -16,29 +16,38 @@ import WarehousesListPage from "../pages/WarehousesListPage.jsx";
 import CreateOrderPage from "../pages/CreateOrderPage.jsx";
 import Layout from '../layouts/Layout.jsx'
 import AdminLayout from '../layouts/AdminLayout.jsx'
+import UserDeliveriesSection from "../components/UserDeliveriesSection.jsx";
+import UserFeedbacksSection from "../components/UserFeedbacksSection.jsx";
+import UserScheduleSection from "../components/UserScheduldeSection.jsx";
+import { UserProfileProvider } from "../context/UserProfileContext.jsx";
 
 const AppRoutes = () => {
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<Layout><Home /></Layout>} />
-        <Route path="/login" element={<Auth />} />
-        <Route path="/user" element={<Layout><UserProfilePage /></Layout>}></Route>
-        <Route path="/admin" element={<AdminLayout><AdminPage /></AdminLayout>}>
-          <Route path="deliveries" element={<DeliveriesPage />} />
-          <Route path="users" element={<UserPage />} />
-          <Route path="orders" element={<OrdersPage />} />
-          <Route path="courier-schedules" element={<CourierSchedulePage />} />
-          <Route path="warehouses" element={<WarehousesPage />} />
-          <Route path="vehicles" element={<VehiclesPage />} />
-          <Route path="feedbacks" element={<FeedbacksPage />} />
-          <Route path="reports" element={<ReportPage />} />
-        </Route>
-        <Route path="/warehouses" element={<Layout><WarehousesListPage /></Layout>}></Route>
-        <Route path="/warehouses/:warehouseId/:warehouseName/create-order" element={<Layout><CreateOrderPage /></Layout>} />
+      <UserProfileProvider>
+        <Routes>
+          <Route path="/" element={<Layout><Home /></Layout>} />
+          <Route path="/login" element={<Auth />} />
+          <Route path="/user" element={<Layout><UserProfilePage /></Layout>}>
+            <Route path="deliveries" element={<UserDeliveriesSection />} />
+            <Route path="feedbacks" element={<UserFeedbacksSection />} />
+            <Route path="schedule" element={<UserScheduleSection />} />
+          </Route>
+          <Route path="/admin" element={<AdminLayout><AdminPage /></AdminLayout>}>
+            <Route path="deliveries" element={<DeliveriesPage />} />
+            <Route path="users" element={<UserPage />} />
+            <Route path="orders" element={<OrdersPage />} />
+            <Route path="courier-schedules" element={<CourierSchedulePage />} />
+            <Route path="warehouses" element={<WarehousesPage />} />
+            <Route path="vehicles" element={<VehiclesPage />} />
+            <Route path="feedbacks" element={<FeedbacksPage />} />
+            <Route path="reports" element={<ReportPage />} />
+          </Route>
+          <Route path="/warehouses" element={<Layout><WarehousesListPage /></Layout>}></Route>
+          <Route path="/warehouses/:warehouseId/:warehouseName/create-order" element={<Layout><CreateOrderPage /></Layout>} />
 
-        {/* Захищений маршрут, доступний тільки для авторизованих користувачів */}
-        {/* <Route
+          {/* Захищений маршрут, доступний тільки для авторизованих користувачів */}
+          {/* <Route
           path="/dashboard"
           element={
             <ProtectedRoute>
@@ -46,7 +55,8 @@ const AppRoutes = () => {
             </ProtectedRoute>
           }
         /> */}
-      </Routes>
+        </Routes>
+      </UserProfileProvider>
     </Router>
   );
 };

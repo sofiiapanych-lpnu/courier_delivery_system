@@ -19,8 +19,8 @@ export const normalizeDeliveryData = (delivery) => ({
   deliveryType: delivery.delivery_type || '',
   paymentMethod: delivery.payment_method || '',
   deliveryStatus: delivery.delivery_status || '',
-  startTime: delivery.start_time ?? null,
-  endTime: delivery.end_time ?? null,
+  startTime: (delivery.start_time && delivery.start_time !== 'Not available') ? delivery.start_time : null,
+  endTime: (delivery.end_time && delivery.end_time !== 'Not available') ? delivery.end_time : null,
   warehouseId: delivery.warehouse_id ?? null,
 });
 

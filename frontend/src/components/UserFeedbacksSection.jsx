@@ -4,8 +4,11 @@ import { useFilters } from '../hooks/useFilters';
 import { courierService } from '../api/courierService';
 import { clientService } from '../api/clientService';
 import { formatFeedbacks } from '../utils/formatters';
+import Pagination from '../components/Pagination'
+import { useUserProfile } from '../context/UserProfileContext'
 
-const UserFeedbacksSection = ({ userInfo, isCourier }) => {
+const UserFeedbacksSection = () => {
+  const { userInfo, isCourier } = useUserProfile();
   const [page, setPage] = useState(1);
   const limit = 5;
   const [totalPages, setTotalPages] = useState(0);
@@ -105,20 +108,7 @@ const UserFeedbacksSection = ({ userInfo, isCourier }) => {
       </div>
 
       <Table data={formatedFeedbacks} columns={feedbackColumns} />
-
-      <div style={{ marginTop: '20px' }}>
-        <button onClick={() => setPage(p => Math.max(p - 1, 1))} disabled={page <= 1}>Prev</button>
-        <span style={{ margin: '0 10px' }}>
-          Page {totalPages === 0 ? 0 : page} of {totalPages}
-        </span>
-        <button
-          onClick={() => setPage(p => Math.min(p + 1, totalPages))}
-          disabled={page >= totalPages || totalPages === 0}
-        >
-          Next
-        </button>
-
-      </div>
+      <Pagination page={page} totalPages={totalPages} setPage={setPage} />
     </div>
   );
 };

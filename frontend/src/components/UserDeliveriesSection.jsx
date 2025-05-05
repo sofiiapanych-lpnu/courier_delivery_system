@@ -4,12 +4,21 @@ import { useFilters } from '../hooks/useFilters';
 import { courierService } from '../api/courierService';
 import { clientService } from '../api/clientService';
 import { formatDelivery } from '../utils/formatters';
+import { deliveryService } from '../api/deliveryService';
+import Modal from '../components/Modal'
+import { normalizeDeliveryData } from '../utils/dataNormalizers';
+import Pagination from '../components/Pagination'
+import { useUserProfile } from '../context/UserProfileContext'
+import './UserDeliveriesSection.module.css'
 
-const UserDeliveriesSection = ({ userInfo, isCourier }) => {
+const UserDeliveriesSection = () => {
+  const { userInfo, isCourier } = useUserProfile();
   const [page, setPage] = useState(1);
   const limit = 5;
   const [totalPages, setTotalPages] = useState(0);
   const [deliveries, setDeliveries] = useState([]);
+  const [selectedDelivery, setSelectedDelivery] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   const deliveryFiltersInitial = {
     deliveryStatus: "",
@@ -48,6 +57,27 @@ const UserDeliveriesSection = ({ userInfo, isCourier }) => {
       .catch(err => console.error("Failed to fetch deliveries", err));
   };
 
+  const handleEditTimes = (delivery) => {
+    console.log(delivery)
+    setSelectedDelivery(delivery);
+    setModalOpen(true);
+  };
+
+  const handleSaveTimes = async () => {
+    try {
+      console.log('selectedDelivery', selectedDelivery)
+      const normalizedDelivery = normalizeDeliveryData(selectedDelivery)
+      console.log('normalizedDelivery', normalizedDelivery)
+
+      await deliveryService.update(selectedDelivery.delivery_id, normalizedDelivery);
+      fetchDeliveries();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setModalOpen(false);
+    }
+  };
+
   const formattedDeliveries = deliveries.map(formatDelivery);
 
   const deliveryColumns = [
@@ -65,51 +95,145 @@ const UserDeliveriesSection = ({ userInfo, isCourier }) => {
     { header: 'Updated At', accessor: 'updated_at' },
   ];
 
+  if (isCourier) {
+    deliveryColumns.push({
+      header: 'Actions',
+      accessor: 'actions',
+      cell: ({ row }) => (
+        <button onClick={() => handleEditTimes(row)}>Edit Times</button>
+      )
+    });
+  }
+
+  const formatDateTimeForInput = (dateString) => {
+    if (!dateString || dateString === 'Not available') return '';
+    const date = new Date(dateString);
+    if (isNaN(date)) return '';
+    return date.toISOString().slice(0, 16);
+  };
+
   return (
     <div>
       <h2>Your Deliveries</h2>
 
       <div className="filters">
-        <h2>Filters</h2>
-        <select name="deliveryStatus" onChange={handleFilterChange} value={formState.deliveryStatus}>
-          <option value="">All Statuses</option>
-          <option value="pending">Pending</option>
-          <option value="in_progress">In Progress</option>
-          <option value="delivered">Delivered</option>
-        </select>
-        <select name="deliveryType" onChange={handleFilterChange} value={formState.deliveryType}>
-          <option value="">All Types</option>
-          <option value="express">Express</option>
-          <option value="standard">Standard</option>
-          <option value="overnight">Overnight</option>
-        </select>
-        <select name="paymentMethod" onChange={handleFilterChange} value={formState.paymentMethod}>
-          <option value="">All Payment Methods</option>
-          <option value="cash">Cash</option>
-          <option value="credit_card">Credit Card</option>
-          <option value="online">Online</option>
-        </select>
-        <input name="startTime" type="datetime-local" onChange={handleFilterChange} value={formState.startTime} />
-        <input name="endTime" type="datetime-local" onChange={handleFilterChange} value={formState.endTime} />
-        <input name="warehouseAddressQuery" value={formState.warehouseAddressQuery} onChange={handleFilterChange} placeholder="Warehouse Address" />
-        <input name="clientAddressQuery" value={formState.clientAddressQuery} onChange={handleFilterChange} placeholder="Client Address" />
-        <input name="orderTypeQuery" value={formState.orderTypeQuery} onChange={handleFilterChange} placeholder="Order Type" />
+        <div className="filter-section">
+          <div className="filter-group">
+            <label>Status</label>
+            <select name="deliveryStatus" onChange={handleFilterChange} value={formState.deliveryStatus}>
+              <option value="">All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="in_progress">In Progress</option>
+              <option value="delivered">Delivered</option>
+            </select>
+          </div>
+
+          <div className="filter-group">
+            <label>Delivery Type</label>
+            <select name="deliveryType" onChange={handleFilterChange} value={formState.deliveryType}>
+              <option value="">All Types</option>
+              <option value="express">Express</option>
+              <option value="standard">Standard</option>
+              <option value="overnight">Overnight</option>
+            </select>
+          </div>
+
+          <div className="filter-group">
+            <label>Payment</label>
+            <select name="paymentMethod" onChange={handleFilterChange} value={formState.paymentMethod}>
+              <option value="">All Payment Methods</option>
+              <option value="cash">Cash</option>
+              <option value="credit_card">Credit Card</option>
+              <option value="online">Online</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="filter-section">
+          <div className="filter-group">
+            <label>Start Time</label>
+            <input name="startTime" type="datetime-local" onChange={handleFilterChange} value={formState.startTime} />
+          </div>
+
+          <div className="filter-group">
+            <label>End Time</label>
+            <input name="endTime" type="datetime-local" onChange={handleFilterChange} value={formState.endTime} />
+          </div>
+        </div>
+
+        <div className="filter-section">
+          <div className="filter-group">
+            <label>Warehouse Address</label>
+            <input name="warehouseAddressQuery" value={formState.warehouseAddressQuery} onChange={handleFilterChange} placeholder="Warehouse Address" />
+          </div>
+
+          <div className="filter-group">
+            <label>Client Address</label>
+            <input name="clientAddressQuery" value={formState.clientAddressQuery} onChange={handleFilterChange} placeholder="Client Address" />
+          </div>
+        </div>
+
+        <div className="filter-section">
+          <div className="filter-group">
+            <label>Order Type</label>
+            <input name="orderTypeQuery" value={formState.orderTypeQuery} onChange={handleFilterChange} placeholder="Order Type" />
+          </div>
+        </div>
+
+
         {isCourier ? (
-          <input name="clientNameQuery" value={formState.clientNameQuery} onChange={handleFilterChange} placeholder="Client Name" />
+          <div className="filter-group">
+            <label>Client Name</label>
+            <input name="clientNameQuery" value={formState.clientNameQuery} onChange={handleFilterChange} placeholder="Client Name" />
+          </div>
         ) : (
-          <input name="courierNameQuery" value={formState.courierNameQuery} onChange={handleFilterChange} placeholder="Courier Name" />
+          <div className="filter-group">
+            <label>Courier Name</label>
+            <input name="courierNameQuery" value={formState.courierNameQuery} onChange={handleFilterChange} placeholder="Courier Name" />
+          </div>
         )}
-        <input name="minCost" value={formState.minCost} onChange={handleFilterChange} placeholder="Min Cost" />
-        <input name="maxCost" value={formState.maxCost} onChange={handleFilterChange} placeholder="Max Cost" />
+
+        <div className="filter-section">
+          <div className="filter-group">
+            <label>Min Cost</label>
+            <input name="minCost" value={formState.minCost} onChange={handleFilterChange} placeholder="Min Cost" />
+          </div>
+
+          <div className="filter-group">
+            <label>Max Cost</label>
+            <input name="maxCost" value={formState.maxCost} onChange={handleFilterChange} placeholder="Max Cost" />
+          </div>
+        </div>
+
         <button onClick={handleClearFilters}>Clear</button>
       </div>
 
+
       <Table data={formattedDeliveries} columns={deliveryColumns} />
-      <div style={{ marginTop: '20px' }}>
-        <button onClick={() => setPage(prev => Math.max(prev - 1, 1))} disabled={page === 1}>Prev</button>
-        <span style={{ margin: '0 10px' }}>Page {page} of {totalPages}</span>
-        <button onClick={() => setPage(prev => Math.min(prev + 1, totalPages))} disabled={page === totalPages}>Next</button>
-      </div>
+      <Pagination page={page} totalPages={totalPages} setPage={setPage} />
+
+      {modalOpen && (
+        <Modal open={modalOpen} onClose={() => setModalOpen(false)} onOK={handleSaveTimes}>
+          <h3>Edit Delivery Times</h3>
+          <label>Start Time</label>
+          <input
+            type="datetime-local"
+            value={formatDateTimeForInput(selectedDelivery.start_time)}
+            onChange={(e) =>
+              setSelectedDelivery({ ...selectedDelivery, start_time: e.target.value })
+            }
+          />
+          <label>End Time</label>
+          <input
+            type="datetime-local"
+            value={formatDateTimeForInput(selectedDelivery.end_time)}
+            onChange={(e) =>
+              setSelectedDelivery({ ...selectedDelivery, end_time: e.target.value })
+            }
+          />
+        </Modal>
+      )}
+
     </div>
   );
 };

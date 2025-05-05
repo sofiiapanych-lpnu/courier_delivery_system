@@ -3,8 +3,10 @@ import Table from './Table';
 import { useFilters } from '../hooks/useFilters';
 import { courierService } from '../api/courierService';
 import { formatSchedule } from '../utils/formatters';
+import { useUserProfile } from '../context/UserProfileContext'
 
-const UserScheduleSection = ({ userInfo }) => {
+const UserScheduleSection = () => {
+  const { userInfo } = useUserProfile();
   const [page, setPage] = useState(1);
   const limit = 5;
   const [totalPages, setTotalPages] = useState(0);
